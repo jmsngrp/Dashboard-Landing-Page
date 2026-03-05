@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Safe Families for Children – Wisconsin | Board Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f5f6f8;--surface:#ffffff;--surface2:#eef0f4;--surface3:#e2e5eb;
+  --border:#d4d8e0;--border-light:#bfc5d0;
+  --text:#1a2030;--text-muted:#556270;--text-dim:#8892a2;
+  --accent:#2563a0;--accent-dim:rgba(37,99,160,0.07);
+  --warm:#b86e20;--warm-dim:rgba(184,110,32,0.07);
+  --rose:#b5342a;--rose-dim:rgba(181,52,42,0.07);
+  --blue:#3573b0;--blue-dim:rgba(53,115,176,0.07);
+  --green:#2a724a;--green-dim:rgba(42,114,74,0.08);
+  --radius:8px;--radius-lg:12px;
+}
+html{font-size:14px;scroll-behavior:smooth}
+body{font-family:'Lato',sans-serif;background:var(--bg);color:var(--text);line-height:1.6;min-height:100vh}
+
+
+/* Filter bar */
+.filter-bar{background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;box-shadow:0 1px 4px rgba(0,0,0,0.06)}
+.filter-inner{max-width:1320px;margin:0 auto;display:flex;flex-direction:column}
+.nav-group{display:flex;overflow-x:auto;flex:1}
+.nav-btn{padding:0.75rem 1.2rem;font-size:0.75rem;font-weight:700;color:var(--text-muted);background:none;border:none;cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;transition:all 0.15s;font-family:'Lato',sans-serif;letter-spacing:0.04em;text-transform:uppercase}
+.nav-btn:hover{color:var(--text);background:var(--accent-dim)}
+.nav-btn.active{color:var(--accent);border-bottom-color:var(--accent)}
+
+.area-filter{display:flex;align-items:center;gap:0;border-top:1px solid var(--border);background:var(--surface2);overflow-x:auto}
+.area-filter label{font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-dim);white-space:nowrap;padding:0 0.8rem}
+.area-btn{padding:0.45rem 0.9rem;font-size:0.7rem;font-weight:700;color:var(--text-muted);background:none;border:none;cursor:pointer;white-space:nowrap;transition:all 0.15s;font-family:'Lato',sans-serif;letter-spacing:0.02em;border-bottom:2px solid transparent}
+.area-btn:hover{color:var(--text);background:var(--warm-dim)}
+.area-btn.active{color:var(--warm);border-bottom-color:var(--warm);background:var(--warm-dim)}
+
+.main{max-width:1320px;margin:0 auto;padding:1.5rem 2rem 4rem}
+.section{display:none;animation:fadeIn 0.3s ease}.section.active{display:block}
+.sm-sub{display:none}.sm-sub.active{display:block}
+.sm-tab{padding:0.75rem 1.2rem;font-size:0.75rem;font-weight:700;color:var(--text-muted);background:none;border:none;cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;transition:all 0.15s;font-family:'Lato',sans-serif;letter-spacing:0.04em;text-transform:uppercase}
+.sm-tab:hover{color:var(--text);background:var(--accent-dim)}
+.sm-tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.kpi-card.kpi-selected{outline:none;box-shadow:0 4px 20px rgba(0,0,0,0.15),0 1px 4px rgba(0,0,0,0.1);transform:translateY(-3px);background:#fff;border:2px solid var(--accent);border-top-width:3px}
+.kpi-card.warm.kpi-selected{border-color:var(--warm)}.kpi-card.rose.kpi-selected{border-color:var(--rose)}.kpi-card.blue.kpi-selected{border-color:var(--blue)}.kpi-card.green.kpi-selected{border-color:var(--green)}
+.kpi-card[onclick]{cursor:pointer;transition:all 0.15s;opacity:0.7}
+.kpi-card[onclick]:hover{opacity:0.85;transform:translateY(-1px)}
+.kpi-card[onclick].kpi-selected{opacity:1}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* KPI */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(185px,1fr));gap:0.8rem;margin-bottom:1.5rem}
+.kpi-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1rem 1.2rem;box-shadow:0 1px 2px rgba(0,0,0,0.04);border-top:3px solid var(--accent)}
+.kpi-card.warm{border-top-color:var(--warm)}.kpi-card.rose{border-top-color:var(--rose)}.kpi-card.blue{border-top-color:var(--blue)}.kpi-card.green{border-top-color:var(--green)}
+.kpi-label{font-size:0.72rem;letter-spacing:0.02em;color:var(--text-dim);margin-bottom:0.3rem;font-weight:700}
+.kpi-value{font-size:1.6rem;font-weight:900;color:var(--text)}
+.kpi-change{font-size:0.75rem;margin-top:0.2rem;font-weight:700}
+.kpi-change.up{color:var(--green)}.kpi-change.down{color:var(--rose)}.kpi-change.flat{color:var(--text-dim)}
+
+/* Tables */
+.table-wrap{overflow-x:auto;border-radius:var(--radius);border:1px solid var(--border);margin-bottom:1.5rem;background:var(--surface);box-shadow:0 1px 2px rgba(0,0,0,0.04)}
+td.arw{font-size:0.58rem;font-weight:600;text-align:center;padding:0.2rem 0.15rem;width:48px;min-width:48px;max-width:48px;opacity:0.55;line-height:1;vertical-align:middle;white-space:nowrap}
+table{width:100%;border-collapse:collapse;font-size:0.84rem}
+thead th{background:var(--surface2);color:var(--text-muted);font-weight:700;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.06em;padding:0.7rem 0.9rem;text-align:right;border-bottom:2px solid var(--border);white-space:nowrap}
+thead th:first-child{text-align:left}
+tbody td{padding:0.55rem 0.9rem;border-bottom:1px solid var(--surface2);text-align:right;font-variant-numeric:tabular-nums}
+tbody td:first-child{text-align:left;color:var(--text-muted);font-weight:700}
+tbody tr:hover{background:var(--accent-dim)}
+tbody tr.total-row{background:var(--surface2)}
+tbody tr.total-row td{border-top:2px solid var(--border);font-weight:900}
+tbody tr.total-row td:first-child{color:var(--accent)}
+.neg{color:var(--rose)}.pos{color:var(--green)}
+
+.section-title{font-size:1.35rem;font-weight:900;margin-bottom:0.3rem}
+.section-desc{font-size:0.85rem;color:var(--text-muted);margin-bottom:1.2rem;max-width:680px}
+.area-badge{display:inline-block;background:var(--accent-dim);color:var(--accent);padding:0.15rem 0.6rem;border-radius:4px;font-size:0.75rem;font-weight:700;margin-left:0.5rem;vertical-align:middle}
+
+.chart-row{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;margin-bottom:1.5rem}
+@media(max-width:900px){.chart-row{grid-template-columns:1fr}}
+.chart-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.2rem;box-shadow:0 1px 2px rgba(0,0,0,0.04)}
+.chart-box h3{font-size:0.9rem;font-weight:700;margin-bottom:0.8rem;color:var(--text-muted)}
+.chart-box.full{grid-column:1/-1}
+
+.bar-group{margin-bottom:0.7rem}
+.bar-label{font-size:0.76rem;color:var(--text-muted);margin-bottom:0.2rem;display:flex;justify-content:space-between;font-weight:700}
+.bar-track{height:20px;background:var(--surface3);border-radius:4px;overflow:hidden}
+.bar-fill{height:100%;border-radius:4px;transition:width 0.6s cubic-bezier(0.22,1,0.36,1)}
+.bar-fill.a{background:var(--accent)}.bar-fill.b{background:var(--warm)}.bar-fill.c{background:var(--blue)}.bar-fill.d{background:var(--green)}.bar-fill.e{background:var(--rose)}.bar-fill.f{background:#7b68a8}.bar-fill.g{background:#5a8c70}
+
+.stacked-bar{display:flex;height:24px;border-radius:4px;overflow:hidden;margin-bottom:0.4rem}
+.legend{display:flex;gap:1.2rem;margin-bottom:0.8rem;flex-wrap:wrap}
+.legend-item{display:flex;align-items:center;gap:0.35rem;font-size:0.75rem;color:var(--text-muted);font-weight:700}
+.legend-dot{width:10px;height:10px;border-radius:2px}
+
+/* Efficiency */
+.eff-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem;margin-bottom:1.5rem}
+.eff-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1rem;box-shadow:0 1px 2px rgba(0,0,0,0.04)}
+.eff-card h4{font-size:0.88rem;font-weight:900;margin-bottom:0.6rem}
+.eff-row{display:flex;justify-content:space-between;align-items:center;padding:0.35rem 0;border-bottom:1px solid var(--surface2);font-size:0.8rem}
+.eff-row:last-child{border-bottom:none}
+.eff-row .area{color:var(--text-muted);font-weight:700}
+.eff-row .vals{display:flex;gap:0.8rem;align-items:center}
+.eff-row .v24{min-width:60px;text-align:right;color:var(--text-dim)}
+.eff-row .v25{min-width:60px;text-align:right;font-weight:700}
+.eff-row .chg{min-width:50px;text-align:right;font-weight:700;font-size:0.72rem;padding:0.1rem 0.4rem;border-radius:4px}
+.chg.good{background:var(--green-dim);color:var(--green)}.chg.bad{background:var(--rose-dim);color:var(--rose)}.chg.neutral{background:var(--surface2);color:var(--text-dim)}
+
+.pill{display:inline-block;padding:0.1rem 0.45rem;border-radius:10px;font-size:0.68rem;font-weight:700}
+.pill.up{background:var(--green-dim);color:var(--green)}.pill.down{background:var(--rose-dim);color:var(--rose)}
+
+@media print{.filter-bar{position:static}.section{display:block!important;page-break-inside:avoid}}
+@media(max-width:600px){.header h1{font-size:1.3rem}.kpi-grid{grid-template-columns:1fr 1fr}.main{padding:1rem}}
+</style>
+</head>
+<body>
+
+
+
+<div class="filter-bar"><div class="filter-inner">
+  <div class="nav-group">
+    <button class="nav-btn active" data-s="overview">Overview Financials</button>
+    <button class="nav-btn" data-s="pnl">Detailed Financials</button>
+    <button class="nav-btn" data-s="state-mission">Impact Overview</button>
+    <button class="nav-btn" data-s="local-mission">Local Mission Impact</button>
+    <button class="nav-btn" data-s="impact-cost">Impact Cost</button>
+  </div>
+  <div class="area-filter">
+    <label>Area</label>
+    <div id="areaTabs"></div>
+  </div>
+</div></div>
+
+<main class="main">
+<div class="section active" id="overview">
+  <h2 class="section-title">Executive Overview <span class="area-badge" id="ov-badge"></span></h2>
+  <p class="section-desc" id="ov-desc"></p>
+  <div class="kpi-grid" id="ov-kpis"></div>
+  <div class="chart-box full" style="margin-top:1.2rem">
+    <h3 id="ov-area-title">Direct Fundraising By Area</h3>
+    <div id="ov-area-bars"></div>
+  </div>
+</div>
+
+<div class="section" id="pnl">
+  <h2 class="section-title">Detailed Financials <span class="area-badge" id="pnl-badge"></span></h2>
+  <p class="section-desc">3-year revenue, expense, and profitability detail.</p>
+  <div class="kpi-grid" id="df-kpis"></div>
+  <div class="chart-box full" style="margin-top:1.2rem">
+    <h3 id="df-area-title">Gross Revenue By Area</h3>
+    <div id="df-area-bars"></div>
+  </div>
+  <div class="chart-box full" style="margin-top:1.2rem">
+    <h3>Statement of Activity</h3>
+    <div id="pnl-table-wrap" class="table-wrap"><table id="pnl-table"></table></div>
+  </div>
+</div>
+
+<div class="section" id="state-mission">
+  <h2 class="section-title">Impact Overview</h2>
+  <p class="section-desc">Organization-wide impact metrics across all Wisconsin areas.</p>
+  <div style="display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:1.2rem">
+    <button class="sm-tab active" data-sm="people" onclick="switchSM(this)">People Served</button>
+    <button class="sm-tab" data-sm="vol" onclick="switchSM(this)">Volunteering</button>
+    <button class="sm-tab" data-sm="rel" onclick="switchSM(this)">Relationships</button>
+    <button class="sm-tab" data-sm="intake" onclick="switchSM(this)">Intake</button>
+  </div>
+  <div class="sm-sub active" id="sm-people">
+    <div class="kpi-grid" id="sm-people-kpis"></div>
+    <div class="chart-box full" style="margin-top:1rem"><h3 id="sm-people-area-title">Avg Monthly Families By Area</h3><div id="sm-people-area"></div></div>
+  </div>
+  <div class="sm-sub" id="sm-vol">
+    <div class="kpi-grid" id="sm-vol-kpis"></div>
+    <div class="chart-box full" style="margin-top:1rem"><h3 id="sm-vol-area-title">Total Volunteers (Year-End) By Area</h3><div id="sm-vol-area"></div></div>
+  </div>
+  <div class="sm-sub" id="sm-rel">
+    <div class="kpi-grid" id="sm-rel-kpis"></div>
+    <div class="chart-box full" style="margin-top:1rem"><h3 id="sm-rel-area-title">Total Active Relationships By Area</h3><div id="sm-rel-area"></div></div>
+  </div>
+  <div class="sm-sub" id="sm-intake">
+    <div class="kpi-grid" id="sm-intake-kpis"></div>
+    <div class="chart-row" style="margin-top:1rem">
+      <div class="chart-box"><h3 id="sm-intake-area-title">Total Intakes By Area</h3><div id="sm-intake-area"></div></div>
+      <div class="chart-box"><h3>Intake Funnel</h3><div id="sm-intake-funnel"></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="section" id="local-mission">
+  <h2 class="section-title">Local Mission Impact <span class="area-badge" id="lm-badge"></span></h2>
+  <p class="section-desc">Site-level impact metrics and trends. Filter by area above.</p>
+  <div class="kpi-grid" id="lm-kpis"></div>
+  <div class="chart-row">
+    <div class="chart-box"><h3>Impact Growth (YoY)</h3><div id="lm-bars"></div></div>
+    <div class="chart-box"><h3>Intake Funnel</h3><div id="lm-funnel"></div></div>
+  </div>
+  <div class="chart-box full" style="margin-top:1.2rem">
+    <h3>Detailed Metrics</h3>
+    <div class="table-wrap"><table id="lm-table"></table></div>
+  </div>
+</div>
+
+<div class="section" id="impact-cost">
+  <h2 class="section-title">Impact Cost <span class="area-badge" id="ic-badge"></span></h2>
+  <p class="section-desc">Cost-per-outcome and operational efficiency ratios. Green = improving, Red = declining.</p>
+  <div class="eff-grid" id="eff-cards"></div>
+  <h3 style="font-size:1rem;font-weight:900;margin:1.5rem 0 0.8rem">Revenue & Overhead Efficiency</h3>
+  <div class="eff-grid" id="eff-rev"></div>
+</div>
+
+</main>
+
+<script>
+const D = {"pnl_by_area": {"All Areas": [{"label": "Individual Donations", "isTotal": false, "2023": 327058.0, "2024": 563972.0, "2025": 510658.0}, {"label": "Church Giving", "isTotal": false, "2023": 261208.0, "2024": 209548.0, "2025": 276575.0}, {"label": "Corporate Giving", "isTotal": false, "2023": 6000.0, "2024": 14850.0, "2025": 32967.0}, {"label": "Grants & Foundation", "isTotal": false, "2023": 744171.0, "2024": 805971.0, "2025": 1107904.0}, {"label": "DOA Grant Revenue", "isTotal": false, "2023": 450847.0, "2024": 462820.0, "2025": 0}, {"label": "Contract Revenue", "isTotal": false, "2023": 30000.0, "2024": 44552.0, "2025": 6811.0}, {"label": "Event Tickets & Sponsorships", "isTotal": false, "2023": 278032.0, "2024": 222687.0, "2025": 325113.0}, {"label": "Interest Revenue", "isTotal": false, "2023": 10343.0, "2024": 28538.0, "2025": 30646.0}, {"label": "TOTAL INCOME", "isTotal": true, "2023": 2108658.0, "2024": 2352937.0, "2025": 2290674.0}, {"label": "Fundraising Costs (COGS)", "isTotal": false, "2023": 129445.0, "2024": 155221.0, "2025": 173433.0}, {"label": "Program Staffing", "isTotal": false, "2023": 1225643.0, "2024": 1390847.0, "2025": 1558274.0}, {"label": "Community Engagement", "isTotal": false, "2023": 51593.0, "2024": 62479.0, "2025": 40962.0}, {"label": "Family Support", "isTotal": false, "2023": 34975.0, "2024": 104571.0, "2025": 158901.0}, {"label": "Program Meetings", "isTotal": false, "2023": 34828.0, "2024": 51102.0, "2025": 60990.0}, {"label": "TOTAL PROGRAM COSTS", "isTotal": true, "2023": 1347039.0, "2024": 1608998.0, "2025": 1819127.0}, {"label": "TOTAL ADMIN COSTS", "isTotal": true, "2023": 217387.0, "2024": 390818.0, "2025": 317918.0}, {"label": "TOTAL OPERATING EXPENSES", "isTotal": true, "2023": 1572834.0, "2024": 1999817.0, "2025": 2137045.0}, {"label": "NET OPERATING INCOME", "isTotal": true, "2023": 406379.0, "2024": 197899.0, "2025": -19804.0}, {"label": "NET INCOME", "isTotal": true, "2023": 396567.0, "2024": 195894.0, "2025": -26869.0}], "Chippewa Valley": [{"label": "Individual Donations", "isTotal": false, "2023": 0, "2024": 268.0, "2025": 3865.0}, {"label": "Church Giving", "isTotal": false, "2023": 0, "2024": 0, "2025": 5574.0}, {"label": "Corporate Giving", "isTotal": false, "2023": 0, "2024": 0, "2025": 0}, {"label": "Grants & Foundation", "isTotal": false, "2023": 0, "2024": 0, "2025": 12840.0}, {"label": "DOA Grant Revenue", "isTotal": false, "2023": 0, "2024": 0, "2025": 0}, {"label": "Contract Revenue", "isTotal": false, "2023": 0, "2024": 0, "2025": 0}, {"label": "Event Tickets & Sponsorships", "isTotal": false, "2023": 0, "2024": 0, "2025": 42.0}, {"label": "Interest Revenue", "isTotal": false, "2023": 0, "2024": 0, "2025": 197.0}, {"label": "TOTAL INCOME", "isTotal": true, "2023": 0, "2024": 268.0, "2025": 22518.0}, {"label": "Fundraising Costs (COGS)", "isTotal": false, "2023": 0, "2024": 1.0, "2025": 3920.0}, {"label": "Program Staffing", "isTotal": false, "2023": 0, "2024": 0, "2025": 0}, {"label": "Community Engagement", "isTotal": false, "2023": 0, "2024": 0, "2025": 287.0}, {"label": "Family Support", "isTotal": false, "2023": 0, "2024": 0, "2025": 276.0}, {"label": "Program Meetings", "isTotal": false, "2023": 0, "2024": 0, "2025": 288.0}, {"label": "TOTAL PROGRAM COSTS", "isTotal": true, "2023": 0, "2024": 0, "2025": 851.0}, {"label": "TOTAL ADMIN COSTS", "isTotal": true, "2023": 0, "2024": 0, "2025": 8.0}, {"label": "TOTAL OPERATING EXPENSES", "isTotal": true, "2023": 0, "2024": 0, "2025": 859.0}, {"label": "NET OPERATING INCOME", "isTotal": true, "2023": 0, "2024": 267.0, "2025": 17739.0}, {"label": "NET INCOME", "isTotal": true, "2023": 0, "2024": 267.0, "2025": 37739.0}], "Dane": [{"label": "Individual Donations", "isTotal": false, "2023": 11195.0, "2024": 26567.0, "2025": 13996.0}, {"label": "Church Giving", "isTotal": false, "2023": 472.0, "2024": 7150.0, "2025": 42058.0}, {"label": "Corporate Giving", "isTotal": false, "2023": 0, "2024": 1500.0, "2025": 0}, {"label": "Grants & Foundation", "isTotal": false, "2023": 322.0, "2024": 10000.0, "2025": 1000.0}, {"label": "DOA Grant Revenue", "isTotal": false, "2023": 0, "2024": 0, "2025": 0}, {"label": "Contract Revenue", "isTotal": false, "2023": 0, "2024": 0, "2025": 0}, {"label": "Event Tickets & Sponsorships", "isTotal": false, "2023": 0.0, "2024": 2387.0, "2025": 0}, {"label": "Interest Revenue", "isTotal": false, "2023": 0, "2024": 325.0, "2025": 663.0}, {"label": "TOTAL INCOME", "isTotal": true, "2023": 11989.0, "2024": 47928.0, "2025": 57717.0}, {"label": "Fundraising Costs (COGS)", "isTotal": false, "2023": 296.0, "2024": 2977.0, "2025": 1148.0}, {"label": "Program Staffing", "isTotal": false, "2023": 120743.0, "2024": 85299.0, "2025": 7867.0}, {"label": "Community Engagement", "isTotal": false, "2023": 9501.0, "2024": 2162.0, "2025": 939.0}, {"label": "Family Support", "isTotal": false, "2023": 2145.0, "2024": 4053.0, "2025": 4203.0}, {"label": "Program Meetings", "isTotal": false, "2023": 2300.0, "2024": 1838.0, "2025": 1490.0}, {"label": "TOTAL PROGRAM COSTS", "isTotal": true, "2023": 134688.0, "2024": 93351.0, "2025": 14501.0}, {"label": "TOTAL ADMIN COSTS", "isTotal": true, "2023": 9211.0, "2024": 4586.0, "2025": 204.0}, {"label": "TOTAL OPERATING EXPENSES", "isTotal": true, "2023": 143899.0, "2024": 97937.0, "2025": 14704.0}, {"label": "NET OPERATING INCOME", "isTotal": true, "2023": -132205.0, "2024": -52986.0, "2025": 41865.0}, {"label": "NET INCOME", "isTotal": true, "2023": -58798.0, "2024": 101142.0, "2025": 41865.0}], "Kenosha/Racine": [{"label": "Individual Donations", "isTotal": false, "2023": 6925.0, "2024": 16056.0, "2025": 27931.0}, {"label": "Church Giving", "isTotal": false, "2023": 38058.0, "2024": 27995.0, "2025": 36421.0}, {"label": "Corporate Giving", "isTotal": false, "2023": 0, "2024": 2000.0, "2025": 0}, {"label": "Grants & Foundation", "isTotal": false, "2023": 60000.0, "2024": 61500.0, "2025": 119504.0}, {"label": "DOA Grant Revenue", "isTotal": false, "2023": 0, "2024": 0, "2025": 0}, {"label": "Contract Revenue", "isTotal": false, "2023": 0, "2024": 0, "2025": 6811.0}, {"label": "Event Tickets & Sponsorships", "isTotal": false, "2023": 6300.0, "2024": 4113.0, "2025": 16533.0}, {"label": "Interest Revenue", "isTotal": false, "2023": 0, "2024": 50.0, "2025": 141.0}, {"label": "TOTAL INCOME", "isTotal": true, "2023": 111283.0, "2024": 111714.0, "2025": 207340.0}, {"label": "Fundraising Costs (COGS)", "isTotal": false, "2023": 3006.0, "2024": 7830.0, "2025": 19489.0}, {"label": "Program Staffing", "isTotal": false, "2023": 81428.0, "2024": 136876.0, "2025": 170139.0}, {"label": "Community Engagement", "isTotal": false, "2023": 4142.0, "2024": 15520.0, "2025": 7985.0}, {"label": "Family Support", "isTotal": false, "2023": 1657.0, "2024": 9853.0, "2025": 15456.0}, {"label": "Program Meetings", "isTotal": false, "2023": 3457.0, "2024": 5308.0, "2025": 6177.0}, {"label": "TOTAL PROGRAM COSTS", "isTotal": true, "2023": 90683.0, "2024": 167557.0, "2025": 199758.0}, {"label": "TOTAL ADMIN COSTS", "isTotal": true, "2023": 8825.0, "2024": 5826.0, "2025": 5881.0}, {"label": "TOTAL OPERATING EXPENSES", "isTotal": true, "2023": 99508.0, "2024": 173383.0, "2025": 205639.0}, {"label": "NET OPERATING INCOME", "isTotal": true, "2023": 8770.0, "2024": -69499.0, "2025": -17788.0}, {"label": "NET INCOME", "isTotal": true, "2023": 23405.0, "2024": -36649.0, "2025": 415.0}], "Milwaukee": [{"label": "Individual Donations", "isTotal": false, "2023": 97332.0, "2024": 148486.0, "2025": 174908.0}, {"label": "Church Giving", "isTotal": false, "2023": 99060.0, "2024": 49439.0, "2025": 66529.0}, {"label": "Corporate Giving", "isTotal": false, "2023": 0, "2024": 4000.0, "2025": 0}, {"label": "Grants & Foundation", "isTotal": false, "2023": 102922.0, "2024": 124587.0, "2025": 221700.0}, {"label": "DOA Grant Revenue", "isTotal": false, "2023": 0, "2024": 0, "2025": 0}, {"label": "Contract Revenue", "isTotal": false, "2023": 0, "2024": 0, "2025": 0}, {"label": "Event Tickets & Sponsorships", "isTotal": false, "2023": 15623.0, "2024": 12156.0, "2025": 41652.0}, {"label": "Interest Revenue", "isTotal": false, "2023": 676.0, "2024": 3030.0, "2025": 5842.0}, {"label": "TOTAL INCOME", "isTotal": true, "2023": 315614.0, "2024": 341697.0, "2025": 510630.0}, {"label": "Fundraising Costs (COGS)", "isTotal": false, "2023": 12663.0, "2024": 16743.0, "2025": 28035.0}, {"label": "Program Staffing", "isTotal": false, "2023": 293732.0, "2024": 317589.0, "2025": 331381.0}, {"label": "Community Engagement", "isTotal": false, "2023": 12128.0, "2024": 16702.0, "2025": 9709.0}, {"label": "Family Support", "isTotal": false, "2023": 10004.0, "2024": 28116.0, "2025": 60705.0}, {"label": "Program Meetings", "isTotal": false, "2023": 3918.0, "2024": 9842.0, "2025": 15032.0}, {"label": "TOTAL PROGRAM COSTS", "isTotal": true, "2023": 319782.0, "2024": 372249.0, "2025": 416827.0}, {"label": "TOTAL ADMIN COSTS", "isTotal": true, "2023": 35670.0, "2024": 26247.0, "2025": 15081.0}, {"label": "TOTAL OPERATING EXPENSES", "isTotal": true, "2023": 355452.0, "2024": 398496.0, "2025": 431908.0}, {"label": "NET OPERATING INCOME", "isTotal": true, "2023": -52501.0, "2024": -73542.0, "2025": 50687.0}, {"label": "NET INCOME", "isTotal": true, "2023": -23555.0, "2024": -45435.0, "2025": 90238.0}], "Northeast": [{"label": "Individual Donations", "isTotal": false, "2023": 26546.0, "2024": 88695.0, "2025": 60312.0}, {"label": "Church Giving", "isTotal": false, "2023": 53203.0, "2024": 35806.0, "2025": 43733.0}, {"label": "Corporate Giving", "isTotal": false, "2023": 1000.0, "2024": 3750.0, "2025": 2500.0}, {"label": "Grants & Foundation", "isTotal": false, "2023": 89800.0, "2024": 108270.0, "2025": 249950.0}, {"label": "DOA Grant Revenue", "isTotal": false, "2023": 0, "2024": 0, "2025": 0}, {"label": "Contract Revenue", "isTotal": false, "2023": 0, "2024": 0, "2025": 0}, {"label": "Event Tickets & Sponsorships", "isTotal": false, "2023": 53905.0, "2024": 48452.0, "2025": 80259.0}, {"label": "Interest Revenue", "isTotal": false, "2023": 0, "2024": 100.0, "2025": 5882.0}, {"label": "TOTAL INCOME", "isTotal": true, "2023": 224454.0, "2024": 285072.0, "2025": 442636.0}, {"label": "Fundraising Costs (COGS)", "isTotal": false, "2023": 11756.0, "2024": 19674.0, "2025": 18908.0}, {"label": "Program Staffing", "isTotal": false, "2023": 127162.0, "2024": 203742.0, "2025": 281974.0}, {"label": "Community Engagement", "isTotal": false, "2023": 2704.0, "2024": 1744.0, "2025": 838.0}, {"label": "Family Support", "isTotal": false, "2023": 3633.0, "2024": 13825.0, "2025": 25501.0}, {"label": "Program Meetings", "isTotal": false, "2023": 4435.0, "2024": 6649.0, "2025": 12124.0}, {"label": "TOTAL PROGRAM COSTS", "isTotal": true, "2023": 137934.0, "2024": 225960.0, "2025": 320436.0}, {"label": "TOTAL ADMIN COSTS", "isTotal": true, "2023": 13546.0, "2024": 13898.0, "2025": 15779.0}, {"label": "TOTAL OPERATING EXPENSES", "isTotal": true, "2023": 151479.0, "2024": 239858.0, "2025": 336216.0}, {"label": "NET OPERATING INCOME", "isTotal": true, "2023": 61219.0, "2024": 25540.0, "2025": 87513.0}, {"label": "NET INCOME", "isTotal": true, "2023": 83263.0, "2024": 64972.0, "2025": 79513.0}], "Sauk": [{"label": "Individual Donations", "isTotal": false, "2023": 204.0, "2024": 32439.0, "2025": 26201.0}, {"label": "Church Giving", "isTotal": false, "2023": 0, "2024": 15662.0, "2025": 6789.0}, {"label": "Corporate Giving", "isTotal": false, "2023": 0, "2024": 0, "2025": 0}, {"label": "Grants & Foundation", "isTotal": false, "2023": 0, "2024": 14500.0, "2025": 8500.0}, {"label": "DOA Grant Revenue", "isTotal": false, "2023": 0, "2024": 0, "2025": 0}, {"label": "Contract Revenue", "isTotal": false, "2023": 0, "2024": 0, "2025": 0}, {"label": "Event Tickets & Sponsorships", "isTotal": false, "2023": 0, "2024": 6206.0, "2025": 24292.0}, {"label": "Interest Revenue", "isTotal": false, "2023": 0, "2024": 0, "2025": 1528.0}, {"label": "TOTAL INCOME", "isTotal": true, "2023": 204.0, "2024": 68807.0, "2025": 67310.0}, {"label": "Fundraising Costs (COGS)", "isTotal": false, "2023": 4.0, "2024": 3358.0, "2025": 6967.0}, {"label": "Program Staffing", "isTotal": false, "2023": 0, "2024": 0, "2025": 42359.0}, {"label": "Community Engagement", "isTotal": false, "2023": 268.0, "2024": 1293.0, "2025": 1696.0}, {"label": "Family Support", "isTotal": false, "2023": 0, "2024": 633.0, "2025": 1549.0}, {"label": "Program Meetings", "isTotal": false, "2023": 0, "2024": 323.0, "2025": 1428.0}, {"label": "TOTAL PROGRAM COSTS", "isTotal": true, "2023": 268.0, "2024": 2248.0, "2025": 47033.0}, {"label": "TOTAL ADMIN COSTS", "isTotal": true, "2023": 0, "2024": 868.0, "2025": 3213.0}, {"label": "TOTAL OPERATING EXPENSES", "isTotal": true, "2023": 268.0, "2024": 3116.0, "2025": 50246.0}, {"label": "NET OPERATING INCOME", "isTotal": true, "2023": -68.0, "2024": 62333.0, "2025": 10098.0}, {"label": "NET INCOME", "isTotal": true, "2023": 932.0, "2024": 65333.0, "2025": 10098.0}], "South Central": [{"label": "Individual Donations", "isTotal": false, "2023": 90772.0, "2024": 77961.0, "2025": 36821.0}, {"label": "Church Giving", "isTotal": false, "2023": 37225.0, "2024": 37564.0, "2025": 33362.0}, {"label": "Corporate Giving", "isTotal": false, "2023": 0, "2024": 2600.0, "2025": 0}, {"label": "Grants & Foundation", "isTotal": false, "2023": 148863.0, "2024": 85895.0, "2025": 66410.0}, {"label": "DOA Grant Revenue", "isTotal": false, "2023": 333.0, "2024": 0, "2025": 0}, {"label": "Contract Revenue", "isTotal": false, "2023": 30000.0, "2024": 44552.0, "2025": 0}, {"label": "Event Tickets & Sponsorships", "isTotal": false, "2023": 91515.0, "2024": 12975.0, "2025": 29197.0}, {"label": "Interest Revenue", "isTotal": false, "2023": 0, "2024": 425.0, "2025": 3946.0}, {"label": "TOTAL INCOME", "isTotal": true, "2023": 399708.0, "2024": 261973.0, "2025": 169736.0}, {"label": "Fundraising Costs (COGS)", "isTotal": false, "2023": 32139.0, "2024": 19559.0, "2025": 27746.0}, {"label": "Program Staffing", "isTotal": false, "2023": 322141.0, "2024": 246233.0, "2025": 225246.0}, {"label": "Community Engagement", "isTotal": false, "2023": 10483.0, "2024": 13287.0, "2025": 11980.0}, {"label": "Family Support", "isTotal": false, "2023": 10006.0, "2024": 19373.0, "2025": 18639.0}, {"label": "Program Meetings", "isTotal": false, "2023": 2920.0, "2024": 8114.0, "2025": 7711.0}, {"label": "TOTAL PROGRAM COSTS", "isTotal": true, "2023": 345550.0, "2024": 287007.0, "2025": 263575.0}, {"label": "TOTAL ADMIN COSTS", "isTotal": true, "2023": 35229.0, "2024": 15319.0, "2025": 11028.0}, {"label": "TOTAL OPERATING EXPENSES", "isTotal": true, "2023": 380779.0, "2024": 302326.0, "2025": 274604.0}, {"label": "NET OPERATING INCOME", "isTotal": true, "2023": -13210.0, "2024": -59912.0, "2025": -132614.0}, {"label": "NET INCOME", "isTotal": true, "2023": 19543.0, "2024": -34912.0, "2025": -112784.0}], "Western WI": [{"label": "Individual Donations", "isTotal": false, "2023": 38687.0, "2024": 93198.0, "2025": 62060.0}, {"label": "Church Giving", "isTotal": false, "2023": 23681.0, "2024": 24832.0, "2025": 42109.0}, {"label": "Corporate Giving", "isTotal": false, "2023": 5000.0, "2024": 1000.0, "2025": 0}, {"label": "Grants & Foundation", "isTotal": false, "2023": 34494.0, "2024": 55719.0, "2025": 18000.0}, {"label": "DOA Grant Revenue", "isTotal": false, "2023": 0, "2024": 0, "2025": 0}, {"label": "Contract Revenue", "isTotal": false, "2023": 0, "2024": 0, "2025": 0}, {"label": "Event Tickets & Sponsorships", "isTotal": false, "2023": 38039.0, "2024": 69303.0, "2025": 46506.0}, {"label": "Interest Revenue", "isTotal": false, "2023": 0, "2024": 475.0, "2025": 2865.0}, {"label": "TOTAL INCOME", "isTotal": true, "2023": 139901.0, "2024": 244525.0, "2025": 171539.0}, {"label": "Fundraising Costs (COGS)", "isTotal": false, "2023": 13688.0, "2024": 37523.0, "2025": 26998.0}, {"label": "Program Staffing", "isTotal": false, "2023": 101717.0, "2024": 128260.0, "2025": 174680.0}, {"label": "Community Engagement", "isTotal": false, "2023": 5691.0, "2024": 4516.0, "2025": 5477.0}, {"label": "Family Support", "isTotal": false, "2023": 3284.0, "2024": 10556.0, "2025": 10194.0}, {"label": "Program Meetings", "isTotal": false, "2023": 1252.0, "2024": 4607.0, "2025": 3578.0}, {"label": "TOTAL PROGRAM COSTS", "isTotal": true, "2023": 111945.0, "2024": 147938.0, "2025": 193928.0}, {"label": "TOTAL ADMIN COSTS", "isTotal": true, "2023": 13977.0, "2024": 9476.0, "2025": 5849.0}, {"label": "TOTAL OPERATING EXPENSES", "isTotal": true, "2023": 125922.0, "2024": 157414.0, "2025": 199778.0}, {"label": "NET OPERATING INCOME", "isTotal": true, "2023": 291.0, "2024": 49588.0, "2025": -55236.0}, {"label": "NET INCOME", "isTotal": true, "2023": 14926.0, "2024": 68351.0, "2025": -56752.0}], "WI Statewide": [{"label": "Individual Donations", "isTotal": false, "2023": 55396.0, "2024": 80302.0, "2025": 104565.0}, {"label": "Church Giving", "isTotal": false, "2023": 9509.0, "2024": 11100.0, "2025": 0.0}, {"label": "Corporate Giving", "isTotal": false, "2023": 0, "2024": 0, "2025": 30467.0}, {"label": "Grants & Foundation", "isTotal": false, "2023": 307770.0, "2024": 345500.0, "2025": 410000.0}, {"label": "DOA Grant Revenue", "isTotal": false, "2023": 450513.0, "2024": 462820.0, "2025": 0}, {"label": "Contract Revenue", "isTotal": false, "2023": 0, "2024": 0, "2025": 0}, {"label": "Event Tickets & Sponsorships", "isTotal": false, "2023": 72650.0, "2024": 67096.0, "2025": 86631.0}, {"label": "Interest Revenue", "isTotal": false, "2023": 9666.0, "2024": 24133.0, "2025": 9583.0}, {"label": "TOTAL INCOME", "isTotal": true, "2023": 905505.0, "2024": 990951.0, "2025": 641247.0}, {"label": "Fundraising Costs (COGS)", "isTotal": false, "2023": 55893.0, "2024": 47555.0, "2025": 40224.0}, {"label": "Program Staffing", "isTotal": false, "2023": 178721.0, "2024": 272849.0, "2025": 324628.0}, {"label": "Community Engagement", "isTotal": false, "2023": 6677.0, "2024": 7256.0, "2025": 2051.0}, {"label": "Family Support", "isTotal": false, "2023": 4247.0, "2024": 18162.0, "2025": 22376.0}, {"label": "Program Meetings", "isTotal": false, "2023": 16546.0, "2024": 14422.0, "2025": 13162.0}, {"label": "TOTAL PROGRAM COSTS", "isTotal": true, "2023": 206190.0, "2024": 312689.0, "2025": 362217.0}, {"label": "TOTAL ADMIN COSTS", "isTotal": true, "2023": 100929.0, "2024": 314598.0, "2025": 260874.0}, {"label": "TOTAL OPERATING EXPENSES", "isTotal": true, "2023": 315528.0, "2024": 627287.0, "2025": 623092.0}, {"label": "NET OPERATING INCOME", "isTotal": true, "2023": 534083.0, "2024": 316110.0, "2025": -22068.0}, {"label": "NET INCOME", "isTotal": true, "2023": 336851.0, "2024": 12827.0, "2025": -117202.0}]}, "rev_by_area": {"2023": {"All Areas": 2108658.0, "Chippewa Valley": 0, "Dane": 11989.0, "Kenosha/Racine": 111283.0, "Milwaukee": 315614.0, "Northeast": 224454.0, "Sauk": 204.0, "South Central": 399708.0, "Western WI": 139901.0, "WI Statewide": 905505.0}, "2024": {"All Areas": 2352937.0, "Chippewa Valley": 268.0, "Dane": 47928.0, "Kenosha/Racine": 111714.0, "Milwaukee": 341697.0, "Northeast": 285072.0, "Sauk": 68807.0, "South Central": 261973.0, "Western WI": 244525.0, "WI Statewide": 990951.0}, "2025": {"All Areas": 2290674.0, "Chippewa Valley": 22518.0, "Dane": 57717.0, "Kenosha/Racine": 207340.0, "Milwaukee": 510630.0, "Northeast": 442636.0, "Sauk": 67310.0, "South Central": 169736.0, "Western WI": 171539.0, "WI Statewide": 641247.0}}, "exp_by_area": {"2024": {"All Areas": {"program": 1608998, "admin": 390818, "fundraising": 155221, "total": 2155037}, "Chippewa Valley": {"program": 0, "admin": 0, "fundraising": 1, "total": 1}, "Dane": {"program": 93351, "admin": 4586, "fundraising": 2977, "total": 100914}, "Kenosha/Racine": {"program": 167557, "admin": 5826, "fundraising": 7830, "total": 181213}, "Milwaukee": {"program": 372249, "admin": 26247, "fundraising": 16743, "total": 415239}, "Northeast": {"program": 225960, "admin": 13898, "fundraising": 19674, "total": 259532}, "Sauk": {"program": 2248, "admin": 868, "fundraising": 3358, "total": 6474}, "South Central": {"program": 287007, "admin": 15319, "fundraising": 19559, "total": 321885}, "Western WI": {"program": 147938, "admin": 9476, "fundraising": 37523, "total": 194937}, "WI Statewide": {"program": 312689, "admin": 314598, "fundraising": 47555, "total": 674842}}, "2025": {"All Areas": {"program": 1819127, "admin": 317918, "fundraising": 173433, "total": 2310478}, "Chippewa Valley": {"program": 851, "admin": 8, "fundraising": 3920, "total": 4779}, "Dane": {"program": 14501, "admin": 204, "fundraising": 1148, "total": 15853}, "Kenosha/Racine": {"program": 199758, "admin": 5881, "fundraising": 19489, "total": 225128}, "Milwaukee": {"program": 416827, "admin": 15081, "fundraising": 28035, "total": 459943}, "Northeast": {"program": 320436, "admin": 15779, "fundraising": 18908, "total": 355123}, "Sauk": {"program": 47033, "admin": 3213, "fundraising": 6967, "total": 57213}, "South Central": {"program": 263575, "admin": 11028, "fundraising": 27746, "total": 302349}, "Western WI": {"program": 193928, "admin": 5849, "fundraising": 26998, "total": 226775}, "WI Statewide": {"program": 362217, "admin": 260874, "fundraising": 40224, "total": 663315}}}, "rev_sources": {"2023": {"All Areas": [{"label": "Individual Donations", "value": 327058.0}, {"label": "Church Giving", "value": 261208.0}, {"label": "Corporate Giving", "value": 6000.0}, {"label": "DOA Grant Revenue", "value": 450847.0}, {"label": "Contract Revenue", "value": 30000.0}, {"label": "Event Tickets & Sponsorships", "value": 278032.0}, {"label": "Interest Revenue", "value": 10343.0}, {"label": "Grants & Foundation", "value": 744171.0}], "Chippewa Valley": [], "Dane": [{"label": "Individual Donations", "value": 11195.0}, {"label": "Church Giving", "value": 472.0}, {"label": "Grants & Foundation", "value": 322.0}], "Kenosha/Racine": [{"label": "Individual Donations", "value": 6925.0}, {"label": "Church Giving", "value": 38058.0}, {"label": "Event Tickets & Sponsorships", "value": 6300.0}, {"label": "Grants & Foundation", "value": 60000.0}], "Milwaukee": [{"label": "Individual Donations", "value": 97332.0}, {"label": "Church Giving", "value": 99060.0}, {"label": "Event Tickets & Sponsorships", "value": 15623.0}, {"label": "Interest Revenue", "value": 676.0}, {"label": "Grants & Foundation", "value": 102922.0}], "Northeast": [{"label": "Individual Donations", "value": 26546.0}, {"label": "Church Giving", "value": 53203.0}, {"label": "Corporate Giving", "value": 1000.0}, {"label": "Event Tickets & Sponsorships", "value": 53905.0}, {"label": "Grants & Foundation", "value": 89800.0}], "Sauk": [{"label": "Individual Donations", "value": 204.0}], "South Central": [{"label": "Individual Donations", "value": 90772.0}, {"label": "Church Giving", "value": 37225.0}, {"label": "DOA Grant Revenue", "value": 333.0}, {"label": "Contract Revenue", "value": 30000.0}, {"label": "Event Tickets & Sponsorships", "value": 91515.0}, {"label": "Grants & Foundation", "value": 148863.0}], "Western WI": [{"label": "Individual Donations", "value": 38687.0}, {"label": "Church Giving", "value": 23681.0}, {"label": "Corporate Giving", "value": 5000.0}, {"label": "Event Tickets & Sponsorships", "value": 38039.0}, {"label": "Grants & Foundation", "value": 34494.0}], "WI Statewide": [{"label": "Individual Donations", "value": 55396.0}, {"label": "Church Giving", "value": 9509.0}, {"label": "DOA Grant Revenue", "value": 450513.0}, {"label": "Event Tickets & Sponsorships", "value": 72650.0}, {"label": "Interest Revenue", "value": 9666.0}, {"label": "Grants & Foundation", "value": 307770.0}]}, "2024": {"All Areas": [{"label": "Individual Donations", "value": 563972.0}, {"label": "Church Giving", "value": 209548.0}, {"label": "Corporate Giving", "value": 14850.0}, {"label": "DOA Grant Revenue", "value": 462820.0}, {"label": "Contract Revenue", "value": 44552.0}, {"label": "Event Tickets & Sponsorships", "value": 222687.0}, {"label": "Interest Revenue", "value": 28538.0}, {"label": "Grants & Foundation", "value": 805971.0}], "Chippewa Valley": [{"label": "Individual Donations", "value": 268.0}], "Dane": [{"label": "Individual Donations", "value": 26567.0}, {"label": "Church Giving", "value": 7150.0}, {"label": "Corporate Giving", "value": 1500.0}, {"label": "Event Tickets & Sponsorships", "value": 2387.0}, {"label": "Interest Revenue", "value": 325.0}, {"label": "Grants & Foundation", "value": 10000.0}], "Kenosha/Racine": [{"label": "Individual Donations", "value": 16056.0}, {"label": "Church Giving", "value": 27995.0}, {"label": "Corporate Giving", "value": 2000.0}, {"label": "Event Tickets & Sponsorships", "value": 4113.0}, {"label": "Interest Revenue", "value": 50.0}, {"label": "Grants & Foundation", "value": 61500.0}], "Milwaukee": [{"label": "Individual Donations", "value": 148486.0}, {"label": "Church Giving", "value": 49439.0}, {"label": "Corporate Giving", "value": 4000.0}, {"label": "Event Tickets & Sponsorships", "value": 12156.0}, {"label": "Interest Revenue", "value": 3030.0}, {"label": "Grants & Foundation", "value": 124587.0}], "Northeast": [{"label": "Individual Donations", "value": 88695.0}, {"label": "Church Giving", "value": 35806.0}, {"label": "Corporate Giving", "value": 3750.0}, {"label": "Event Tickets & Sponsorships", "value": 48452.0}, {"label": "Interest Revenue", "value": 100.0}, {"label": "Grants & Foundation", "value": 108270.0}], "Sauk": [{"label": "Individual Donations", "value": 32439.0}, {"label": "Church Giving", "value": 15662.0}, {"label": "Event Tickets & Sponsorships", "value": 6206.0}, {"label": "Grants & Foundation", "value": 14500.0}], "South Central": [{"label": "Individual Donations", "value": 77961.0}, {"label": "Church Giving", "value": 37564.0}, {"label": "Corporate Giving", "value": 2600.0}, {"label": "Contract Revenue", "value": 44552.0}, {"label": "Event Tickets & Sponsorships", "value": 12975.0}, {"label": "Interest Revenue", "value": 425.0}, {"label": "Grants & Foundation", "value": 85895.0}], "Western WI": [{"label": "Individual Donations", "value": 93198.0}, {"label": "Church Giving", "value": 24832.0}, {"label": "Corporate Giving", "value": 1000.0}, {"label": "Event Tickets & Sponsorships", "value": 69303.0}, {"label": "Interest Revenue", "value": 475.0}, {"label": "Grants & Foundation", "value": 55719.0}], "WI Statewide": [{"label": "Individual Donations", "value": 80302.0}, {"label": "Church Giving", "value": 11100.0}, {"label": "DOA Grant Revenue", "value": 462820.0}, {"label": "Event Tickets & Sponsorships", "value": 67096.0}, {"label": "Interest Revenue", "value": 24133.0}, {"label": "Grants & Foundation", "value": 345500.0}]}, "2025": {"All Areas": [{"label": "Individual Donations", "value": 510658.0}, {"label": "Church Giving", "value": 276575.0}, {"label": "Corporate Giving", "value": 32967.0}, {"label": "Contract Revenue", "value": 6811.0}, {"label": "Event Tickets & Sponsorships", "value": 325113.0}, {"label": "Interest Revenue", "value": 30646.0}, {"label": "Grants & Foundation", "value": 1107904.0}], "Chippewa Valley": [{"label": "Individual Donations", "value": 3865.0}, {"label": "Church Giving", "value": 5574.0}, {"label": "Event Tickets & Sponsorships", "value": 42.0}, {"label": "Interest Revenue", "value": 197.0}, {"label": "Grants & Foundation", "value": 12840.0}], "Dane": [{"label": "Individual Donations", "value": 13996.0}, {"label": "Church Giving", "value": 42058.0}, {"label": "Interest Revenue", "value": 663.0}, {"label": "Grants & Foundation", "value": 1000.0}], "Kenosha/Racine": [{"label": "Individual Donations", "value": 27931.0}, {"label": "Church Giving", "value": 36421.0}, {"label": "Contract Revenue", "value": 6811.0}, {"label": "Event Tickets & Sponsorships", "value": 16533.0}, {"label": "Interest Revenue", "value": 141.0}, {"label": "Grants & Foundation", "value": 119504.0}], "Milwaukee": [{"label": "Individual Donations", "value": 174908.0}, {"label": "Church Giving", "value": 66529.0}, {"label": "Event Tickets & Sponsorships", "value": 41652.0}, {"label": "Interest Revenue", "value": 5842.0}, {"label": "Grants & Foundation", "value": 221700.0}], "Northeast": [{"label": "Individual Donations", "value": 60312.0}, {"label": "Church Giving", "value": 43733.0}, {"label": "Corporate Giving", "value": 2500.0}, {"label": "Event Tickets & Sponsorships", "value": 80259.0}, {"label": "Interest Revenue", "value": 5882.0}, {"label": "Grants & Foundation", "value": 249950.0}], "Sauk": [{"label": "Individual Donations", "value": 26201.0}, {"label": "Church Giving", "value": 6789.0}, {"label": "Event Tickets & Sponsorships", "value": 24292.0}, {"label": "Interest Revenue", "value": 1528.0}, {"label": "Grants & Foundation", "value": 8500.0}], "South Central": [{"label": "Individual Donations", "value": 36821.0}, {"label": "Church Giving", "value": 33362.0}, {"label": "Event Tickets & Sponsorships", "value": 29197.0}, {"label": "Interest Revenue", "value": 3946.0}, {"label": "Grants & Foundation", "value": 66410.0}], "Western WI": [{"label": "Individual Donations", "value": 62060.0}, {"label": "Church Giving", "value": 42109.0}, {"label": "Event Tickets & Sponsorships", "value": 46506.0}, {"label": "Interest Revenue", "value": 2865.0}, {"label": "Grants & Foundation", "value": 18000.0}], "WI Statewide": [{"label": "Individual Donations", "value": 104565.0}, {"label": "Corporate Giving", "value": 30467.0}, {"label": "Event Tickets & Sponsorships", "value": 86631.0}, {"label": "Interest Revenue", "value": 9583.0}, {"label": "Grants & Foundation", "value": 410000.0}]}}, "mission": {"2024": {"All Areas": {"individuals_served": 5344, "families_served": 1424, "avg_monthly_families": 118.5, "hosted_days": 3353, "hosted_nights": 3256, "total_hosted": 6609, "total_volunteers": 942, "partner_churches": 68, "service_hours": 77654, "intake": 652, "opened": 325, "graduations": 104, "total_relationships": 146}, "Chippewa Valley": {"individuals_served": 0, "families_served": 0, "avg_monthly_families": 0, "hosted_days": 0, "hosted_nights": 0, "total_hosted": 0, "total_volunteers": 0, "partner_churches": 0, "service_hours": 0, "intake": 0, "opened": 0, "graduations": 0, "total_relationships": 0}, "Dane": {"individuals_served": 260, "families_served": 80, "avg_monthly_families": 6.7, "hosted_days": 103, "hosted_nights": 41, "total_hosted": 144, "total_volunteers": 76, "partner_churches": 3, "service_hours": 2632, "intake": 37, "opened": 10, "graduations": 13, "total_relationships": 2}, "Kenosha/Racine": {"individuals_served": 810, "families_served": 195, "avg_monthly_families": 16.2, "hosted_days": 439, "hosted_nights": 384, "total_hosted": 823, "total_volunteers": 95, "partner_churches": 4, "service_hours": 7041, "intake": 96, "opened": 49, "graduations": 9, "total_relationships": 35}, "Milwaukee": {"individuals_served": 1182, "families_served": 295, "avg_monthly_families": 24.6, "hosted_days": 913, "hosted_nights": 769, "total_hosted": 1682, "total_volunteers": 264, "partner_churches": 15, "service_hours": 31777, "intake": 221, "opened": 113, "graduations": 39, "total_relationships": 32}, "Northeast": {"individuals_served": 1289, "families_served": 346, "avg_monthly_families": 28.8, "hosted_days": 469, "hosted_nights": 524, "total_hosted": 993, "total_volunteers": 204, "partner_churches": 8, "service_hours": 18926, "intake": 54, "opened": 52, "graduations": 0, "total_relationships": 37}, "Sauk": {"individuals_served": 0, "families_served": 0, "avg_monthly_families": 0.0, "hosted_days": 0, "hosted_nights": 0, "total_hosted": 0, "total_volunteers": 12, "partner_churches": 2, "service_hours": 104, "intake": 2, "opened": 0, "graduations": 0, "total_relationships": 0}, "South Central": {"individuals_served": 1299, "families_served": 348, "avg_monthly_families": 28.9, "hosted_days": 810, "hosted_nights": 787, "total_hosted": 1597, "total_volunteers": 182, "partner_churches": 26, "service_hours": 380, "intake": 156, "opened": 56, "graduations": 34, "total_relationships": 25}, "Western WI": {"individuals_served": 504, "families_served": 160, "avg_monthly_families": 13.3, "hosted_days": 619, "hosted_nights": 751, "total_hosted": 1370, "total_volunteers": 109, "partner_churches": 10, "service_hours": 16795, "intake": 86, "opened": 45, "graduations": 9, "total_relationships": 15}, "WI Statewide": {"individuals_served": 0, "families_served": 0, "avg_monthly_families": 0, "hosted_days": 0, "hosted_nights": 0, "total_hosted": 0, "total_volunteers": 0, "partner_churches": 0, "service_hours": 0, "intake": 0, "opened": 0, "graduations": 0, "total_relationships": 0}}, "2025": {"All Areas": {"individuals_served": 6076, "families_served": 1762, "avg_monthly_families": 146.9, "hosted_days": 2388, "hosted_nights": 2073, "total_hosted": 4461, "total_volunteers": 1099, "partner_churches": 83, "service_hours": 97397, "intake": 865, "opened": 342, "graduations": 107, "total_relationships": 176}, "Chippewa Valley": {"individuals_served": 0, "families_served": 0, "avg_monthly_families": 0, "hosted_days": 0, "hosted_nights": 0, "total_hosted": 0, "total_volunteers": 0, "partner_churches": 0, "service_hours": 0, "intake": 0, "opened": 0, "graduations": 0, "total_relationships": 0}, "Dane": {"individuals_served": 171, "families_served": 55, "avg_monthly_families": 4.6, "hosted_days": 5, "hosted_nights": 0, "total_hosted": 5, "total_volunteers": 43, "partner_churches": 2, "service_hours": 156, "intake": 20, "opened": 12, "graduations": 5, "total_relationships": 2}, "Kenosha/Racine": {"individuals_served": 967, "families_served": 256, "avg_monthly_families": 21.3, "hosted_days": 281, "hosted_nights": 252, "total_hosted": 533, "total_volunteers": 103, "partner_churches": 4, "service_hours": 9820, "intake": 119, "opened": 43, "graduations": 28, "total_relationships": 36}, "Milwaukee": {"individuals_served": 1514, "families_served": 451, "avg_monthly_families": 37.6, "hosted_days": 1227, "hosted_nights": 903, "total_hosted": 2130, "total_volunteers": 298, "partner_churches": 18, "service_hours": 51257, "intake": 369, "opened": 148, "graduations": 39, "total_relationships": 56}, "Northeast": {"individuals_served": 1879, "families_served": 535, "avg_monthly_families": 44.6, "hosted_days": 301, "hosted_nights": 577, "total_hosted": 878, "total_volunteers": 278, "partner_churches": 12, "service_hours": 19778, "intake": 108, "opened": 43, "graduations": 0, "total_relationships": 42}, "Sauk": {"individuals_served": 80, "families_served": 18, "avg_monthly_families": 1.5, "hosted_days": 81, "hosted_nights": 78, "total_hosted": 159, "total_volunteers": 31, "partner_churches": 4, "service_hours": 4302, "intake": 7, "opened": 5, "graduations": 2, "total_relationships": 5}, "South Central": {"individuals_served": 749, "families_served": 238, "avg_monthly_families": 19.9, "hosted_days": 237, "hosted_nights": 133, "total_hosted": 370, "total_volunteers": 204, "partner_churches": 26, "service_hours": 7426, "intake": 139, "opened": 43, "graduations": 25, "total_relationships": 19}, "Western WI": {"individuals_served": 716, "families_served": 209, "avg_monthly_families": 17.4, "hosted_days": 256, "hosted_nights": 130, "total_hosted": 386, "total_volunteers": 142, "partner_churches": 17, "service_hours": 4659, "intake": 103, "opened": 48, "graduations": 8, "total_relationships": 16}, "WI Statewide": {"individuals_served": 0, "families_served": 0, "avg_monthly_families": 0, "hosted_days": 0, "hosted_nights": 0, "total_hosted": 0, "total_volunteers": 0, "partner_churches": 0, "service_hours": 0, "intake": 0, "opened": 0, "graduations": 0, "total_relationships": 0}}}, "efficiency": {"2024": {"All Areas": {"cost_per_individual": 301.08, "cost_per_family": 13578.04, "cost_per_hosted": 243.46, "cost_per_intake": 2467.79, "cost_per_graduation": 15471.13, "cost_per_service_hour": 20.72, "program_cost_ratio": 0.68, "admin_ratio": 0.17, "fundraising_roi": 1.43, "rev_per_volunteer": 2497.81, "ind_per_10k_staff": 38.42, "intake_conversion": 0.5, "program_cost": 1608998, "revenue": 2352937}, "Chippewa Valley": {"cost_per_individual": null, "cost_per_family": null, "cost_per_hosted": null, "cost_per_intake": null, "cost_per_graduation": null, "cost_per_service_hour": null, "program_cost_ratio": 0.0, "admin_ratio": 0.0, "fundraising_roi": 0.0, "rev_per_volunteer": null, "ind_per_10k_staff": null, "intake_conversion": null, "program_cost": 0, "revenue": 268}, "Dane": {"cost_per_individual": 359.04, "cost_per_family": 13932.99, "cost_per_hosted": 648.27, "cost_per_intake": 2523.0, "cost_per_graduation": 7180.85, "cost_per_service_hour": 35.47, "program_cost_ratio": 1.95, "admin_ratio": 0.1, "fundraising_roi": 0.8, "rev_per_volunteer": 630.63, "ind_per_10k_staff": 30.48, "intake_conversion": 0.27, "program_cost": 93351, "revenue": 47928}, "Kenosha/Racine": {"cost_per_individual": 206.86, "cost_per_family": 10343.02, "cost_per_hosted": 203.59, "cost_per_intake": 1745.39, "cost_per_graduation": 18617.44, "cost_per_service_hour": 23.8, "program_cost_ratio": 1.5, "admin_ratio": 0.05, "fundraising_roi": 0.53, "rev_per_volunteer": 1175.94, "ind_per_10k_staff": 59.18, "intake_conversion": 0.51, "program_cost": 167557, "revenue": 111714}, "Milwaukee": {"cost_per_individual": 314.93, "cost_per_family": 15132.07, "cost_per_hosted": 221.31, "cost_per_intake": 1684.38, "cost_per_graduation": 9544.85, "cost_per_service_hour": 11.71, "program_cost_ratio": 1.09, "admin_ratio": 0.08, "fundraising_roi": 0.73, "rev_per_volunteer": 1294.31, "ind_per_10k_staff": 37.22, "intake_conversion": 0.51, "program_cost": 372249, "revenue": 341697}, "Northeast": {"cost_per_individual": 175.3, "cost_per_family": 7845.83, "cost_per_hosted": 227.55, "cost_per_intake": 4184.44, "cost_per_graduation": null, "cost_per_service_hour": 11.94, "program_cost_ratio": 0.79, "admin_ratio": 0.05, "fundraising_roi": 2.46, "rev_per_volunteer": 1397.41, "ind_per_10k_staff": 63.27, "intake_conversion": 0.96, "program_cost": 225960, "revenue": 285072}, "Sauk": {"cost_per_individual": null, "cost_per_family": null, "cost_per_hosted": null, "cost_per_intake": 1124.0, "cost_per_graduation": null, "cost_per_service_hour": 21.62, "program_cost_ratio": 0.03, "admin_ratio": 0.01, "fundraising_roi": 1.85, "rev_per_volunteer": 5733.92, "ind_per_10k_staff": null, "intake_conversion": 0.0, "program_cost": 2248, "revenue": 68807}, "South Central": {"cost_per_individual": 220.94, "cost_per_family": 9931.04, "cost_per_hosted": 179.72, "cost_per_intake": 1839.79, "cost_per_graduation": 8441.38, "cost_per_service_hour": 756.28, "program_cost_ratio": 1.1, "admin_ratio": 0.06, "fundraising_roi": 0.66, "rev_per_volunteer": 1439.41, "ind_per_10k_staff": 52.75, "intake_conversion": 0.36, "program_cost": 287007, "revenue": 261973}, "Western WI": {"cost_per_individual": 293.53, "cost_per_family": 11123.16, "cost_per_hosted": 107.98, "cost_per_intake": 1720.21, "cost_per_graduation": 16437.56, "cost_per_service_hour": 8.81, "program_cost_ratio": 0.61, "admin_ratio": 0.04, "fundraising_roi": 1.85, "rev_per_volunteer": 2243.35, "ind_per_10k_staff": 39.3, "intake_conversion": 0.52, "program_cost": 147938, "revenue": 244525}, "WI Statewide": {"cost_per_individual": null, "cost_per_family": null, "cost_per_hosted": null, "cost_per_intake": null, "cost_per_graduation": null, "cost_per_service_hour": null, "program_cost_ratio": 0.32, "admin_ratio": 0.32, "fundraising_roi": 1.41, "rev_per_volunteer": null, "ind_per_10k_staff": 0.0, "intake_conversion": null, "program_cost": 312689, "revenue": 990951}}, "2025": {"All Areas": {"cost_per_individual": 299.4, "cost_per_family": 12383.44, "cost_per_hosted": 407.78, "cost_per_intake": 2103.04, "cost_per_graduation": 17001.19, "cost_per_service_hour": 18.68, "program_cost_ratio": 0.79, "admin_ratio": 0.14, "fundraising_roi": 1.87, "rev_per_volunteer": 2084.33, "ind_per_10k_staff": 38.99, "intake_conversion": 0.4, "program_cost": 1819127, "revenue": 2290674}, "Chippewa Valley": {"cost_per_individual": null, "cost_per_family": null, "cost_per_hosted": null, "cost_per_intake": null, "cost_per_graduation": null, "cost_per_service_hour": null, "program_cost_ratio": 0.04, "admin_ratio": 0.0, "fundraising_roi": 0.01, "rev_per_volunteer": null, "ind_per_10k_staff": null, "intake_conversion": null, "program_cost": 851, "revenue": 22518}, "Dane": {"cost_per_individual": 84.8, "cost_per_family": 3152.39, "cost_per_hosted": 2900.2, "cost_per_intake": 725.05, "cost_per_graduation": 2900.2, "cost_per_service_hour": 93.25, "program_cost_ratio": 0.25, "admin_ratio": 0.0, "fundraising_roi": 0.0, "rev_per_volunteer": 1342.26, "ind_per_10k_staff": 217.36, "intake_conversion": 0.6, "program_cost": 14501, "revenue": 57717}, "Kenosha/Racine": {"cost_per_individual": 206.57, "cost_per_family": 9378.31, "cost_per_hosted": 374.78, "cost_per_intake": 1678.64, "cost_per_graduation": 7134.21, "cost_per_service_hour": 20.34, "program_cost_ratio": 0.96, "admin_ratio": 0.03, "fundraising_roi": 0.85, "rev_per_volunteer": 2013.01, "ind_per_10k_staff": 56.84, "intake_conversion": 0.36, "program_cost": 199758, "revenue": 207340}, "Milwaukee": {"cost_per_individual": 275.32, "cost_per_family": 11085.82, "cost_per_hosted": 195.69, "cost_per_intake": 1129.61, "cost_per_graduation": 10687.87, "cost_per_service_hour": 8.13, "program_cost_ratio": 0.82, "admin_ratio": 0.03, "fundraising_roi": 1.49, "rev_per_volunteer": 1713.52, "ind_per_10k_staff": 45.69, "intake_conversion": 0.4, "program_cost": 416827, "revenue": 510630}, "Northeast": {"cost_per_individual": 170.54, "cost_per_family": 7184.66, "cost_per_hosted": 364.96, "cost_per_intake": 2967.0, "cost_per_graduation": null, "cost_per_service_hour": 16.2, "program_cost_ratio": 0.72, "admin_ratio": 0.04, "fundraising_roi": 4.24, "rev_per_volunteer": 1592.22, "ind_per_10k_staff": 66.64, "intake_conversion": 0.4, "program_cost": 320436, "revenue": 442636}, "Sauk": {"cost_per_individual": 587.91, "cost_per_family": 31355.33, "cost_per_hosted": 295.81, "cost_per_intake": 6719.0, "cost_per_graduation": 23516.5, "cost_per_service_hour": 10.93, "program_cost_ratio": 0.7, "admin_ratio": 0.05, "fundraising_roi": 3.49, "rev_per_volunteer": 2171.29, "ind_per_10k_staff": 18.89, "intake_conversion": 0.71, "program_cost": 47033, "revenue": 67310}, "South Central": {"cost_per_individual": 351.9, "cost_per_family": 13244.97, "cost_per_hosted": 712.36, "cost_per_intake": 1896.22, "cost_per_graduation": 10543.0, "cost_per_service_hour": 35.5, "program_cost_ratio": 1.55, "admin_ratio": 0.06, "fundraising_roi": 1.05, "rev_per_volunteer": 832.04, "ind_per_10k_staff": 33.25, "intake_conversion": 0.31, "program_cost": 263575, "revenue": 169736}, "Western WI": {"cost_per_individual": 270.85, "cost_per_family": 11145.29, "cost_per_hosted": 502.4, "cost_per_intake": 1882.8, "cost_per_graduation": 24241.0, "cost_per_service_hour": 41.62, "program_cost_ratio": 1.13, "admin_ratio": 0.03, "fundraising_roi": 1.72, "rev_per_volunteer": 1208.02, "ind_per_10k_staff": 40.99, "intake_conversion": 0.47, "program_cost": 193928, "revenue": 171539}, "WI Statewide": {"cost_per_individual": null, "cost_per_family": null, "cost_per_hosted": null, "cost_per_intake": null, "cost_per_graduation": null, "cost_per_service_hour": null, "program_cost_ratio": 0.56, "admin_ratio": 0.41, "fundraising_roi": 2.15, "rev_per_volunteer": null, "ind_per_10k_staff": 0.0, "intake_conversion": null, "program_cost": 362217, "revenue": 641247}}}, "areas": ["All Areas", "Chippewa Valley", "Dane", "Kenosha/Racine", "Milwaukee", "Northeast", "Sauk", "South Central", "Western WI", "WI Statewide"], "field_areas": ["Chippewa Valley", "Dane", "Kenosha/Racine", "Milwaukee", "Northeast", "Sauk", "South Central", "Western WI", "WI Statewide"], "rev_sharing": {"2023": {"All Areas": -0.0, "Chippewa Valley": 0, "Dane": 73407.0, "Kenosha/Racine": 14635.0, "Milwaukee": 30170.0, "Northeast": 22044.0, "Sauk": 1000.0, "South Central": 32753.0, "Western WI": 14635.0, "WI Statewide": -188645.0}, "2024": {"All Areas": -0.0, "Chippewa Valley": 0, "Dane": 154128.0, "Kenosha/Racine": 32850.0, "Milwaukee": 28106.0, "Northeast": 39432.0, "Sauk": 3000.0, "South Central": 25000.0, "Western WI": 20768.0, "WI Statewide": -303283.0}, "2025": {"All Areas": 0.0, "Chippewa Valley": 20000.0, "Dane": 0, "Kenosha/Racine": 18203.0, "Milwaukee": 40000.0, "Northeast": -8000.0, "Sauk": 0, "South Central": 20000.0, "Western WI": 0, "WI Statewide": -90203.0}}, "equity": {"Chippewa Valley": 38005.87, "Dane": 51865.03, "Kenosha/Racine": 10415.0, "Milwaukee": 334346.44, "Northeast": 308180.33, "Sauk": 76362.99, "South Central": 118397.74, "Western WI": 100007.98, "WI Statewide": 347721.25, "All Areas": 1385302.63}, "net_assets": {"Chippewa Valley": 267.0, "Dane": 10000.0, "Kenosha/Racine": 10000.0, "Milwaukee": 244108.23, "Northeast": 228667.53, "Sauk": 66264.95, "South Central": 231181.37, "Western WI": 156759.49, "WI Statewide": 464923.43, "All Areas": 1412172.0}, "net_income_2025_bs": {"Chippewa Valley": 37738.87, "Dane": 41865.03, "Kenosha/Racine": 415.0, "Milwaukee": 90238.21, "Northeast": 79512.8, "Sauk": 10098.04, "South Central": -112783.63, "Western WI": -56751.51, "WI Statewide": -117202.18, "All Areas": -26869.37}, "budget_2026": {"Chippewa Valley": {"revenue": 57335, "cogs": 1084, "gross_profit": 56251, "program_costs": 54931, "admin_costs": 1320, "total_expenses": 56251, "net_operating": 0, "rev_sharing": 0, "net_revenue": 0, "individual_donations": 0, "church_giving": 0, "grant_revenue": 0, "foundation_revenue": 0, "fundraising_events": 7335, "institutional": 50000}, "Dane": {"revenue": 63706, "cogs": 1205, "gross_profit": 62501, "program_costs": 61034, "admin_costs": 1467, "total_expenses": 62501, "net_operating": 0, "rev_sharing": 0, "net_revenue": 0, "individual_donations": 0, "church_giving": 0, "grant_revenue": 0, "foundation_revenue": 0, "fundraising_events": 3706, "institutional": 60000}, "Kenosha/Racine": {"revenue": 266659, "cogs": 19074, "gross_profit": 247585, "program_costs": 240919, "admin_costs": 6666, "total_expenses": 247585, "net_operating": 0, "rev_sharing": 0, "net_revenue": 0, "individual_donations": 0, "church_giving": 0, "grant_revenue": 0, "foundation_revenue": 0, "fundraising_events": 16659, "institutional": 250000}, "Milwaukee": {"revenue": 550056, "cogs": 37606, "gross_profit": 512450, "program_costs": 516613, "admin_costs": 15837, "total_expenses": 532450, "net_operating": -20000, "rev_sharing": 20000, "net_revenue": 0, "individual_donations": 175000, "church_giving": 0, "grant_revenue": 0, "foundation_revenue": 0, "fundraising_events": 75056, "institutional": 300000}, "Northeast": {"revenue": 483136, "cogs": 24494, "gross_profit": 458642, "program_costs": 442139, "admin_costs": 16503, "total_expenses": 458642, "net_operating": 0, "rev_sharing": 0, "net_revenue": 0, "individual_donations": 83136, "church_giving": 0, "grant_revenue": 0, "foundation_revenue": 0, "fundraising_events": 100000, "institutional": 300000}, "Sauk": {"revenue": 74909, "cogs": 7315, "gross_profit": 67594, "program_costs": 64220, "admin_costs": 3374, "total_expenses": 67594, "net_operating": 0, "rev_sharing": 0, "net_revenue": 0, "individual_donations": 0, "church_giving": 0, "grant_revenue": 0, "foundation_revenue": 0, "fundraising_events": 14909, "institutional": 60000}, "South Central": {"revenue": 200000, "cogs": 18907, "gross_profit": 181093, "program_costs": 191969, "admin_costs": 9124, "total_expenses": 201093, "net_operating": -20000, "rev_sharing": 20000, "net_revenue": 0, "individual_donations": 40000, "church_giving": 40000, "grant_revenue": 40000, "foundation_revenue": 40000, "fundraising_events": 40000, "institutional": 0}, "Western WI": {"revenue": 223970, "cogs": 28348, "gross_profit": 195622, "program_costs": 189509, "admin_costs": 6113, "total_expenses": 195622, "net_operating": 0, "rev_sharing": 0, "net_revenue": 0, "individual_donations": 70000, "church_giving": 48034, "grant_revenue": 0, "foundation_revenue": 0, "fundraising_events": 85936, "institutional": 20000}, "WI Statewide": {"revenue": 710643, "cogs": 42235, "gross_profit": 668408, "program_costs": 358232, "admin_costs": 270176, "total_expenses": 628408, "net_operating": 40000, "rev_sharing": -40000, "net_revenue": 0, "individual_donations": 0, "church_giving": 0, "grant_revenue": 0, "foundation_revenue": 0, "fundraising_events": 100643, "institutional": 610000}, "All Areas": {"revenue": 2630414, "cogs": 180268, "gross_profit": 2450146, "program_costs": 2119566, "admin_costs": 330580, "total_expenses": 2450146, "net_operating": 0, "rev_sharing": 0, "net_revenue": 0, "individual_donations": 368136, "church_giving": 88034, "grant_revenue": 40000, "foundation_revenue": 40000, "fundraising_events": 444244, "institutional": 1650000}}, "staffing_2026": {"Chippewa Valley": 47472, "Dane": 52746, "Kenosha/Racine": 204020, "Milwaukee": 427235, "Northeast": 402224, "Sauk": 59597, "South Central": 164530, "Western WI": 166632, "WI Statewide": 565831, "All Areas": 2090287}, "target_reserve": {"Chippewa Valley": 17802.0, "Dane": 19780.0, "Kenosha/Racine": 76508.0, "Milwaukee": 160213.0, "Northeast": 150834.0, "Sauk": 22349.0, "South Central": 61699.0, "Western WI": 62487.0, "WI Statewide": 212187.0, "All Areas": 783858.0}, "local_fundraising": {"2023": {"All Areas": 1528366, "Chippewa Valley": 0, "Dane": 11693, "Kenosha/Racine": 108277, "Milwaukee": 302951, "Northeast": 212698, "Sauk": 200, "South Central": 367236, "Western WI": 126213, "WI Statewide": 399099}, "2024": {"All Areas": 1734896, "Chippewa Valley": 267, "Dane": 44951, "Kenosha/Racine": 103884, "Milwaukee": 324954, "Northeast": 265398, "Sauk": 65449, "South Central": 242414, "Western WI": 207002, "WI Statewide": 480576}, "2025": {"All Areas": 2117241, "Chippewa Valley": 18598, "Dane": 56569, "Kenosha/Racine": 187851, "Milwaukee": 482595, "Northeast": 423728, "Sauk": 60343, "South Central": 141990, "Western WI": 144541, "WI Statewide": 601023}, "2026": {"All Areas": 2450146, "Chippewa Valley": 56251, "Dane": 62501, "Kenosha/Racine": 247585, "Milwaukee": 512450, "Northeast": 458642, "Sauk": 67594, "South Central": 181093, "Western WI": 195622, "WI Statewide": 668408}}, "mission_v2": {"2024": {"Kenosha/Racine": {"avg_families": 16.2, "avg_individuals": 67.5, "avg_volunteers": 64.0, "avg_active_volunteers": 0, "avg_partner_churches": 3.3, "avg_hosting": 2.1, "avg_friendships": 22.3, "avg_coaching": 2.0, "avg_relationships": 26.4, "unique_families": 27, "unique_individuals": 111, "total_intake": 96, "total_opened": 49, "total_matched": 22, "total_graduations": 9, "total_hosted_days": 439, "total_hosted_nights": 384, "total_hosted": 823, "total_service_hours": 7041, "dec_families": 22, "dec_individuals": 97, "dec_volunteers": 95, "dec_active_volunteers": 0, "dec_partner_churches": 4, "dec_hosting": 2, "dec_friendships": 33, "dec_coaching": 3, "dec_relationships": 38, "ind_fam_ratio": 4.1, "monthly_data": [{"month": "January", "families": 6.0, "individuals": 20.0, "matched": 1.0, "intake": 5.0, "hosted_days": 62.0, "hosted_nights": 62.0, "volunteers": 60.0, "active_volunteers": 0, "partner_churches": 3.0, "active_hosting": 1.0, "active_friendships": 8.0, "active_coaching": 2.0, "graduations": 0.0}, {"month": "February", "families": 8.0, "individuals": 30.0, "matched": 1.0, "intake": 7.0, "hosted_days": 62.0, "hosted_nights": 56.0, "volunteers": 60.0, "active_volunteers": 0, "partner_churches": 3.0, "active_hosting": 4.0, "active_friendships": 12.0, "active_coaching": 2.0, "graduations": 0.0}, {"month": "March", "families": 12.0, "individuals": 55.0, "matched": 1.0, "intake": 6.0, "hosted_days": 70.0, "hosted_nights": 62.0, "volunteers": 60.0, "active_volunteers": 0, "partner_churches": 3.0, "active_hosting": 3.0, "active_friendships": 16.0, "active_coaching": 2.0, "graduations": 0.0}, {"month": "April", "families": 14.0, "individuals": 66.0, "matched": 2.0, "intake": 14.0, "hosted_days": 65.0, "hosted_nights": 60.0, "volunteers": 60.0, "active_volunteers": 0, "partner_churches": 3.0, "active_hosting": 3.0, "active_friendships": 19.0, "active_coaching": 1.0, "graduations": 0.0}, {"month": "May", "families": 19.0, "individuals": 79.0, "matched": 4.0, "intake": 8.0, "hosted_days": 67.0, "hosted_nights": 46.0, "volunteers": 60.0, "active_volunteers": 0, "partner_churches": 3.0, "active_hosting": 2.0, "active_friendships": 26.0, "active_coaching": 1.0, "graduations": 5.0}, {"month": "June", "families": 16.0, "individuals": 64.0, "matched": 1.0, "intake": 7.0, "hosted_days": 4.0, "hosted_nights": 0.0, "volunteers": 60.0, "active_volunteers": 0, "partner_churches": 3.0, "active_hosting": 1.0, "active_friendships": 23.0, "active_coaching": 1.0, "graduations": 0.0}, {"month": "July", "families": 18.0, "individuals": 69.0, "matched": 2.0, "intake": 6.0, "hosted_days": 0.0, "hosted_nights": 0.0, "volunteers": 60.0, "active_volunteers": 0, "partner_churches": 3.0, "active_hosting": 0.0, "active_friendships": 28.0, "active_coaching": 1.0, "graduations": 1.0}, {"month": "August", "families": 18.0, "individuals": 64.0, "matched": 0.0, "intake": 5.0, "hosted_days": 10.0, "hosted_nights": 0.0, "volunteers": 60.0, "active_volunteers": 0, "partner_churches": 3.0, "active_hosting": 3.0, "active_friendships": 23.0, "active_coaching": 1.0, "graduations": 1.0}, {"month": "September", "families": 20.0, "individuals": 87.0, "matched": 5.0, "intake": 13.0, "hosted_days": 6.0, "hosted_nights": 6.0, "volunteers": 60.0, "active_volunteers": 0, "partner_churches": 4.0, "active_hosting": 3.0, "active_friendships": 26.0, "active_coaching": 3.0, "graduations": 1.0}, {"month": "October", "families": 20.0, "individuals": 80.0, "matched": 1.0, "intake": 14.0, "hosted_days": 31.0, "hosted_nights": 31.0, "volunteers": 65.0, "active_volunteers": 0, "partner_churches": 4.0, "active_hosting": 1.0, "active_friendships": 25.0, "active_coaching": 3.0, "graduations": 0.0}, {"month": "November", "families": 22.0, "individuals": 99.0, "matched": 1.0, "intake": 4.0, "hosted_days": 31.0, "hosted_nights": 30.0, "volunteers": 68.0, "active_volunteers": 0, "partner_churches": 4.0, "active_hosting": 2.0, "active_friendships": 29.0, "active_coaching": 4.0, "graduations": 0.0}, {"month": "December", "families": 22.0, "individuals": 97.0, "matched": 3.0, "intake": 7.0, "hosted_days": 31.0, "hosted_nights": 31.0, "volunteers": 95.0, "active_volunteers": 0, "partner_churches": 4.0, "active_hosting": 2.0, "active_friendships": 33.0, "active_coaching": 3.0, "graduations": 1.0}]}, "Milwaukee": {"avg_families": 24.6, "avg_individuals": 98.5, "avg_volunteers": 249.6, "avg_active_volunteers": 0, "avg_partner_churches": 14.2, "avg_hosting": 2.2, "avg_friendships": 9.0, "avg_coaching": 0.9, "avg_relationships": 12.1, "unique_families": 68, "unique_individuals": 290, "total_intake": 221, "total_opened": 113, "total_matched": 45, "total_graduations": 10, "total_hosted_days": 913, "total_hosted_nights": 769, "total_hosted": 1682, "total_service_hours": 8024, "dec_families": 23, "dec_individuals": 80, "dec_volunteers": 264, "dec_active_volunteers": 0, "dec_partner_churches": 15, "dec_hosting": 7, "dec_friendships": 25, "dec_coaching": 4, "dec_relationships": 36, "ind_fam_ratio": 4.3, "monthly_data": [{"month": "January", "families": 25.0, "individuals": 73.0, "matched": 2.0, "intake": 16.0, "hosted_days": 9.0, "hosted_nights": 6.0, "volunteers": 250.0, "active_volunteers": 0, "partner_churches": 14.0, "active_hosting": 0, "active_friendships": 0, "active_coaching": 0, "graduations": 0}, {"month": "February", "families": 27.0, "individuals": 79.0, "matched": 3.0, "intake": 20.0, "hosted_days": 115.0, "hosted_nights": 105.0, "volunteers": 249.0, "active_volunteers": 0, "partner_churches": 14.0, "active_hosting": 0, "active_friendships": 0, "active_coaching": 0, "graduations": 0}, {"month": "March", "families": 24.0, "individuals": 102.0, "matched": 7.0, "intake": 12.0, "hosted_days": 77.0, "hosted_nights": 65.0, "volunteers": 249.0, "active_volunteers": 0, "partner_churches": 14.0, "active_hosting": 0, "active_friendships": 0, "active_coaching": 0, "graduations": 0}, {"month": "April", "families": 28.0, "individuals": 99.0, "matched": 4.0, "intake": 20.0, "hosted_days": 42.0, "hosted_nights": 30.0, "volunteers": 249.0, "active_volunteers": 0, "partner_churches": 14.0, "active_hosting": 0, "active_friendships": 0, "active_coaching": 0, "graduations": 0}, {"month": "May", "families": 32.0, "individuals": 119.0, "matched": 4.0, "intake": 15.0, "hosted_days": 65.0, "hosted_nights": 52.0, "volunteers": 240.0, "active_volunteers": 0, "partner_churches": 14.0, "active_hosting": 0, "active_friendships": 0, "active_coaching": 0, "graduations": 0}, {"month": "June", "families": 29.0, "individuals": 116.0, "matched": 4.0, "intake": 29.0, "hosted_days": 125.0, "hosted_nights": 112.0, "volunteers": 241.0, "active_volunteers": 0, "partner_churches": 14.0, "active_hosting": 0, "active_friendships": 0, "active_coaching": 0, "graduations": 0}, {"month": "July", "families": 16.0, "individuals": 138.0, "matched": 3.0, "intake": 19.0, "hosted_days": 99.0, "hosted_nights": 87.0, "volunteers": 241.0, "active_volunteers": 0, "partner_churches": 14.0, "active_hosting": 0, "active_friendships": 0, "active_coaching": 0, "graduations": 0}, {"month": "August", "families": 14.0, "individuals": 97.0, "matched": 3.0, "intake": 21.0, "hosted_days": 121.0, "hosted_nights": 90.0, "volunteers": 246.0, "active_volunteers": 0, "partner_churches": 14.0, "active_hosting": 7.0, "active_friendships": 21.0, "active_coaching": 2.0, "graduations": 5.0}, {"month": "September", "families": 28.0, "individuals": 107.0, "matched": 6.0, "intake": 17.0, "hosted_days": 32.0, "hosted_nights": 28.0, "volunteers": 246.0, "active_volunteers": 0, "partner_churches": 14.0, "active_hosting": 0, "active_friendships": 0, "active_coaching": 0, "graduations": 0}, {"month": "October", "families": 26.0, "individuals": 92.0, "matched": 4.0, "intake": 22.0, "hosted_days": 69.0, "hosted_nights": 54.0, "volunteers": 255.0, "active_volunteers": 0, "partner_churches": 15.0, "active_hosting": 7.0, "active_friendships": 30.0, "active_coaching": 2.0, "graduations": 4.0}, {"month": "November", "families": 23.0, "individuals": 80.0, "matched": 5.0, "intake": 18.0, "hosted_days": 71.0, "hosted_nights": 64.0, "volunteers": 265.0, "active_volunteers": 0, "partner_churches": 15.0, "active_hosting": 5.0, "active_friendships": 32.0, "active_coaching": 3.0, "graduations": 0.0}, {"month": "December", "families": 23.0, "individuals": 80.0, "matched": 0.0, "intake": 12.0, "hosted_days": 88.0, "hosted_nights": 76.0, "volunteers": 264.0, "active_volunteers": 0, "partner_churches": 15.0, "active_hosting": 7.0, "active_friendships": 25.0, "active_coaching": 4.0, "graduations": 1.0}]}, "Northeast": {"avg_families": 28.8, "avg_individuals": 107.4, "avg_volunteers": 204.0, "avg_active_volunteers": 0, "avg_partner_churches": 7.1, "avg_hosting": 11.7, "avg_friendships": 17.2, "avg_coaching": 8.3, "avg_relationships": 37.2, "unique_families": 74, "unique_individuals": 276, "total_intake": 54, "total_opened": 52, "total_matched": 51, "total_graduations": 0, "total_hosted_days": 469, "total_hosted_nights": 524, "total_hosted": 993, "total_service_hours": 18926, "dec_families": 36, "dec_individuals": 131, "dec_volunteers": 204, "dec_active_volunteers": 0, "dec_partner_churches": 8, "dec_hosting": 11, "dec_friendships": 26, "dec_coaching": 9, "dec_relationships": 46, "ind_fam_ratio": 3.7, "monthly_data": [{"month": "January", "families": 29.0, "individuals": 101.0, "matched": 6.0, "intake": 7.0, "hosted_days": 153.0, "hosted_nights": 27.0, "volunteers": 204.0, "active_volunteers": 0, "partner_churches": 7.0, "active_hosting": 14.0, "active_friendships": 15.0, "active_coaching": 8.0, "graduations": 0}, {"month": "February", "families": 26.0, "individuals": 90.0, "matched": 3.0, "intake": 3.0, "hosted_days": 106.0, "hosted_nights": 97.0, "volunteers": 204.0, "active_volunteers": 0, "partner_churches": 7.0, "active_hosting": 13.0, "active_friendships": 11.0, "active_coaching": 9.0, "graduations": 0}, {"month": "March", "families": 24.0, "individuals": 87.0, "matched": 5.0, "intake": 5.0, "hosted_days": 65.0, "hosted_nights": 18.0, "volunteers": 204.0, "active_volunteers": 0, "partner_churches": 7.0, "active_hosting": 9.0, "active_friendships": 11.0, "active_coaching": 8.0, "graduations": 0}, {"month": "April", "families": 25.0, "individuals": 90.0, "matched": 5.0, "intake": 5.0, "hosted_days": 32.0, "hosted_nights": 39.0, "volunteers": 204.0, "active_volunteers": 0, "partner_churches": 7.0, "active_hosting": 11.0, "active_friendships": 12.0, "active_coaching": 7.0, "graduations": 0}, {"month": "May", "families": 29.0, "individuals": 114.0, "matched": 5.0, "intake": 5.0, "hosted_days": 4.0, "hosted_nights": 40.0, "volunteers": 204.0, "active_volunteers": 0, "partner_churches": 7.0, "active_hosting": 6.0, "active_friendships": 19.0, "active_coaching": 11.0, "graduations": 0}, {"month": "June", "families": 24.0, "individuals": 100.0, "matched": 2.0, "intake": 2.0, "hosted_days": 4.0, "hosted_nights": 38.0, "volunteers": 204.0, "active_volunteers": 0, "partner_churches": 7.0, "active_hosting": 6.0, "active_friendships": 22.0, "active_coaching": 9.0, "graduations": 0}, {"month": "July", "families": 27.0, "individuals": 92.0, "matched": 1.0, "intake": 1.0, "hosted_days": 21.0, "hosted_nights": 21.0, "volunteers": 204.0, "active_volunteers": 0, "partner_churches": 7.0, "active_hosting": 12.0, "active_friendships": 14.0, "active_coaching": 7.0, "graduations": 0}, {"month": "August", "families": 30.0, "individuals": 114.0, "matched": 5.0, "intake": 5.0, "hosted_days": 20.0, "hosted_nights": 24.0, "volunteers": 204.0, "active_volunteers": 0, "partner_churches": 7.0, "active_hosting": 12.0, "active_friendships": 10.0, "active_coaching": 8.0, "graduations": 0}, {"month": "September", "families": 32.0, "individuals": 128.0, "matched": 4.0, "intake": 6.0, "hosted_days": 15.0, "hosted_nights": 66.0, "volunteers": 204.0, "active_volunteers": 0, "partner_churches": 7.0, "active_hosting": 17.0, "active_friendships": 20.0, "active_coaching": 8.0, "graduations": 0}, {"month": "October", "families": 31.0, "individuals": 125.0, "matched": 7.0, "intake": 7.0, "hosted_days": 28.0, "hosted_nights": 100.0, "volunteers": 204.0, "active_volunteers": 0, "partner_churches": 7.0, "active_hosting": 16.0, "active_friendships": 22.0, "active_coaching": 8.0, "graduations": 0}, {"month": "November", "families": 33.0, "individuals": 117.0, "matched": 5.0, "intake": 5.0, "hosted_days": 21.0, "hosted_nights": 47.0, "volunteers": 204.0, "active_volunteers": 0, "partner_churches": 7.0, "active_hosting": 13.0, "active_friendships": 25.0, "active_coaching": 8.0, "graduations": 0}, {"month": "December", "families": 36.0, "individuals": 131.0, "matched": 3.0, "intake": 3.0, "hosted_days": 0.0, "hosted_nights": 7.0, "volunteers": 204.0, "active_volunteers": 0, "partner_churches": 8.0, "active_hosting": 11.0, "active_friendships": 26.0, "active_coaching": 9.0, "graduations": 0}]}, "Sauk": {"avg_families": 0.0, "avg_individuals": 0.0, "avg_volunteers": 10.2, "avg_active_volunteers": 0, "avg_partner_churches": 1.2, "avg_hosting": 0.0, "avg_friendships": 0.0, "avg_coaching": 0.0, "avg_relationships": 0.0, "unique_families": 0, "unique_individuals": 0, "total_intake": 2, "total_opened": 0, "total_matched": 0, "total_graduations": 0, "total_hosted_days": 0, "total_hosted_nights": 0, "total_hosted": 0, "total_service_hours": 104, "dec_families": 0, "dec_individuals": 0, "dec_volunteers": 12, "dec_active_volunteers": 0, "dec_partner_churches": 2, "dec_hosting": 0, "dec_friendships": 0, "dec_coaching": 0, "dec_relationships": 0, "ind_fam_ratio": 3.0, "monthly_data": [{"month": "January", "families": 0.0, "individuals": 0.0, "matched": 0.0, "intake": 0.0, "hosted_days": 0.0, "hosted_nights": 0.0, "volunteers": 6.0, "active_volunteers": 0, "partner_churches": 0.0, "active_hosting": 0.0, "active_friendships": 0.0, "active_coaching": 0.0, "graduations": 0.0}, {"month": "February", "families": 0.0, "individuals": 0.0, "matched": 0.0, "intake": 0.0, "hosted_days": 0.0, "hosted_nights": 0.0, "volunteers": 8.0, "active_volunteers": 0, "partner_churches": 0.0, "active_hosting": 0.0, "active_friendships": 0.0, "active_coaching": 0.0, "graduations": 0.0}, {"month": "March", "families": 0.0, "individuals": 0.0, "matched": 0.0, "intake": 0.0, "hosted_days": 0.0, "hosted_nights": 0.0, "volunteers": 9.0, "active_volunteers": 0, "partner_churches": 0.0, "active_hosting": 0.0, "active_friendships": 0.0, "active_coaching": 0.0, "graduations": 0.0}, {"month": "April", "families": 0.0, "individuals": 0.0, "matched": 0.0, "intake": 0.0, "hosted_days": 0.0, "hosted_nights": 0.0, "volunteers": 10.0, "active_volunteers": 0, "partner_churches": 0.0, "active_hosting": 0.0, "active_friendships": 0.0, "active_coaching": 0.0, "graduations": 0.0}, {"month": "May", "families": 0.0, "individuals": 0.0, "matched": 0.0, "intake": 0.0, "hosted_days": 0.0, "hosted_nights": 0.0, "volunteers": 10.0, "active_volunteers": 0, "partner_churches": 1.0, "active_hosting": 0.0, "active_friendships": 0.0, "active_coaching": 0.0, "graduations": 0.0}, {"month": "June", "families": 0.0, "individuals": 0.0, "matched": 0.0, "intake": 0.0, "hosted_days": 0.0, "hosted_nights": 0.0, "volunteers": 10.0, "active_volunteers": 0, "partner_churches": 1.0, "active_hosting": 0.0, "active_friendships": 0.0, "active_coaching": 0.0, "graduations": 0.0}, {"month": "July", "families": 0.0, "individuals": 0.0, "matched": 0.0, "intake": 1.0, "hosted_days": 0.0, "hosted_nights": 0.0, "volunteers": 11.0, "active_volunteers": 0, "partner_churches": 2.0, "active_hosting": 0.0, "active_friendships": 0.0, "active_coaching": 0.0, "graduations": 0.0}, {"month": "August", "families": 0.0, "individuals": 0.0, "matched": 0.0, "intake": 1.0, "hosted_days": 0.0, "hosted_nights": 0.0, "volunteers": 11.0, "active_volunteers": 0, "partner_churches": 2.0, "active_hosting": 0.0, "active_friendships": 0.0, "active_coaching": 0.0, "graduations": 0.0}, {"month": "September", "families": 0.0, "individuals": 0.0, "matched": 0.0, "intake": 0.0, "hosted_days": 0.0, "hosted_nights": 0.0, "volunteers": 11.0, "active_volunteers": 0, "partner_churches": 2.0, "active_hosting": 0.0, "active_friendships": 0.0, "active_coaching": 0.0, "graduations": 0.0}, {"month": "October", "families": 0.0, "individuals": 0.0, "matched": 0.0, "intake": 0.0, "hosted_days": 0.0, "hosted_nights": 0.0, "volunteers": 12.0, "active_volunteers": 0, "partner_churches": 2.0, "active_hosting": 0.0, "active_friendships": 0.0, "active_coaching": 0.0, "graduations": 0.0}, {"month": "November", "families": 0.0, "individuals": 0.0, "matched": 0.0, "intake": 0.0, "hosted_days": 0.0, "hosted_nights": 0.0, "volunteers": 12.0, "active_volunteers": 0, "partner_churches": 2.0, "active_hosting": 0.0, "active_friendships": 0.0, "active_coaching": 0.0, "graduations": 0.0}, {"month": "December", "families": 0.0, "individuals": 0.0, "matched": 0.0, "intake": 0.0, "hosted_days": 0.0, "hosted_nights": 0.0, "volunteers": 12.0, "active_volunteers": 0, "partner_churches": 2.0, "active_hosting": 0.0, "active_friendships": 0.0, "active_coaching": 0.0, "graduations": 0.0}]}, "South Central": {"avg_families": 29.0, "avg_individuals": 108.2, "avg_volunteers": 173.7, "avg_active_volunteers": 0, "avg_partner_churches": 23.1, "avg_hosting": 5.4, "avg_friendships": 25.6, "avg_coaching": 4.0, "avg_relationships": 35.0, "unique_families": 54, "unique_individuals": 200, "total_intake": 156, "total_opened": 56, "total_matched": 31, "total_graduations": 34, "total_hosted_days": 810, "total_hosted_nights": 787, "total_hosted": 1597, "total_service_hours": 0, "dec_families": 23, "dec_individuals": 77, "dec_volunteers": 182, "dec_active_volunteers": 0, "dec_partner_churches": 26, "dec_hosting": 4, "dec_friendships": 21, "dec_coaching": 3, "dec_relationships": 28, "ind_fam_ratio": 3.7, "monthly_data": [{"month": "January", "families": 26.0, "individuals": 97.0, "matched": 3.0, "intake": 14.0, "hosted_days": 59.0, "hosted_nights": 42.0, "volunteers": 166.0, "active_volunteers": 0, "partner_churches": 22.0, "active_hosting": 5.0, "active_friendships": 23.0, "active_coaching": 7.0, "graduations": 3.0}, {"month": "February", "families": 31.0, "individuals": 112.0, "matched": 3.0, "intake": 18.0, "hosted_days": 73.0, "hosted_nights": 61.0, "volunteers": 168.0, "active_volunteers": 0, "partner_churches": 22.0, "active_hosting": 4.0, "active_friendships": 19.0, "active_coaching": 6.0, "graduations": 4.0}, {"month": "March", "families": 31.0, "individuals": 120.0, "matched": 5.0, "intake": 18.0, "hosted_days": 85.0, "hosted_nights": 85.0, "volunteers": 169.0, "active_volunteers": 0, "partner_churches": 22.0, "active_hosting": 4.0, "active_friendships": 16.0, "active_coaching": 4.0, "graduations": 2.0}, {"month": "April", "families": 32.0, "individuals": 133.0, "matched": 3.0, "intake": 11.0, "hosted_days": 89.0, "hosted_nights": 89.0, "volunteers": 172.0, "active_volunteers": 0, "partner_churches": 22.0, "active_hosting": 5.0, "active_friendships": 25.0, "active_coaching": 4.0, "graduations": 4.0}, {"month": "May", "families": 31.0, "individuals": 135.0, "matched": 4.0, "intake": 14.0, "hosted_days": 102.0, "hosted_nights": 101.0, "volunteers": 173.0, "active_volunteers": 0, "partner_churches": 22.0, "active_hosting": 5.0, "active_friendships": 29.0, "active_coaching": 4.0, "graduations": 1.0}, {"month": "June", "families": 32.0, "individuals": 125.0, "matched": 3.0, "intake": 8.0, "hosted_days": 73.0, "hosted_nights": 72.0, "volunteers": 171.0, "active_volunteers": 0, "partner_churches": 22.0, "active_hosting": 8.0, "active_friendships": 37.0, "active_coaching": 4.0, "graduations": 2.0}, {"month": "July", "families": 38.0, "individuals": 135.0, "matched": 3.0, "intake": 14.0, "hosted_days": 142.0, "hosted_nights": 138.0, "volunteers": 173.0, "active_volunteers": 0, "partner_churches": 22.0, "active_hosting": 8.0, "active_friendships": 35.0, "active_coaching": 4.0, "graduations": 0.0}, {"month": "August", "families": 35.0, "individuals": 133.0, "matched": 1.0, "intake": 16.0, "hosted_days": 85.0, "hosted_nights": 77.0, "volunteers": 176.0, "active_volunteers": 0, "partner_churches": 24.0, "active_hosting": 8.0, "active_friendships": 33.0, "active_coaching": 3.0, "graduations": 10.0}, {"month": "September", "families": 24.0, "individuals": 79.0, "matched": 1.0, "intake": 14.0, "hosted_days": 65.0, "hosted_nights": 60.0, "volunteers": 176.0, "active_volunteers": 0, "partner_churches": 24.0, "active_hosting": 8.0, "active_friendships": 25.0, "active_coaching": 3.0, "graduations": 1.0}, {"month": "October", "families": 22.0, "individuals": 75.0, "matched": 1.0, "intake": 5.0, "hosted_days": 29.0, "hosted_nights": 21.0, "volunteers": 176.0, "active_volunteers": 0, "partner_churches": 24.0, "active_hosting": 4.0, "active_friendships": 23.0, "active_coaching": 3.0, "graduations": 1.0}, {"month": "November", "families": 23.0, "individuals": 78.0, "matched": 4.0, "intake": 15.0, "hosted_days": 1.0, "hosted_nights": 18.0, "volunteers": 182.0, "active_volunteers": 0, "partner_churches": 25.0, "active_hosting": 2.0, "active_friendships": 21.0, "active_coaching": 3.0, "graduations": 2.0}, {"month": "December", "families": 23.0, "individuals": 77.0, "matched": 0.0, "intake": 9.0, "hosted_days": 7.0, "hosted_nights": 23.0, "volunteers": 182.0, "active_volunteers": 0, "partner_churches": 26.0, "active_hosting": 4.0, "active_friendships": 21.0, "active_coaching": 3.0, "graduations": 4.0}]}, "Western WI": {"avg_families": 13.3, "avg_individuals": 42.0, "avg_volunteers": 108.0, "avg_active_volunteers": 0, "avg_partner_churches": 9.0, "avg_hosting": 8.4, "avg_friendships": 10.4, "avg_coaching": 4.7, "avg_relationships": 23.5, "unique_families": 51, "unique_individuals": 159, "total_intake": 86, "total_opened": 45, "total_matched": 40, "total_graduations": 9, "total_hosted_days": 619, "total_hosted_nights": 751, "total_hosted": 1370, "total_service_hours": 16795, "dec_families": 17, "dec_individuals": 73, "dec_volunteers": 109, "dec_active_volunteers": 0, "dec_partner_churches": 10, "dec_hosting": 8, "dec_friendships": 7, "dec_coaching": 2, "dec_relationships": 17, "ind_fam_ratio": 3.1, "monthly_data": [{"month": "January", "families": 14.0, "individuals": 36.0, "matched": 3.0, "intake": 6.0, "hosted_days": 2.0, "hosted_nights": 63.0, "volunteers": 113.0, "active_volunteers": 0, "partner_churches": 8.0, "active_hosting": 5.0, "active_friendships": 20.0, "active_coaching": 2.0, "graduations": 0.0}, {"month": "February", "families": 13.0, "individuals": 34.0, "matched": 2.0, "intake": 9.0, "hosted_days": 11.0, "hosted_nights": 59.0, "volunteers": 106.0, "active_volunteers": 0, "partner_churches": 8.0, "active_hosting": 9.0, "active_friendships": 16.0, "active_coaching": 2.0, "graduations": 2.0}, {"month": "March", "families": 14.0, "individuals": 23.0, "matched": 5.0, "intake": 10.0, "hosted_days": 7.0, "hosted_nights": 32.0, "volunteers": 109.0, "active_volunteers": 0, "partner_churches": 8.0, "active_hosting": 5.0, "active_friendships": 9.0, "active_coaching": 3.0, "graduations": 0.0}, {"month": "April", "families": 12.0, "individuals": 33.0, "matched": 3.0, "intake": 5.0, "hosted_days": 49.0, "hosted_nights": 41.0, "volunteers": 110.0, "active_volunteers": 0, "partner_churches": 9.0, "active_hosting": 11.0, "active_friendships": 8.0, "active_coaching": 5.0, "graduations": 0.0}, {"month": "May", "families": 13.0, "individuals": 28.0, "matched": 3.0, "intake": 6.0, "hosted_days": 46.0, "hosted_nights": 62.0, "volunteers": 110.0, "active_volunteers": 0, "partner_churches": 9.0, "active_hosting": 9.0, "active_friendships": 10.0, "active_coaching": 10.0, "graduations": 0.0}, {"month": "June", "families": 9.0, "individuals": 29.0, "matched": 2.0, "intake": 2.0, "hosted_days": 29.0, "hosted_nights": 44.0, "volunteers": 112.0, "active_volunteers": 0, "partner_churches": 9.0, "active_hosting": 10.0, "active_friendships": 2.0, "active_coaching": 9.0, "graduations": 0.0}, {"month": "July", "families": 12.0, "individuals": 43.0, "matched": 3.0, "intake": 4.0, "hosted_days": 45.0, "hosted_nights": 42.0, "volunteers": 112.0, "active_volunteers": 0, "partner_churches": 9.0, "active_hosting": 10.0, "active_friendships": 10.0, "active_coaching": 9.0, "graduations": 1.0}, {"month": "August", "families": 15.0, "individuals": 51.0, "matched": 4.0, "intake": 10.0, "hosted_days": 14.0, "hosted_nights": 61.0, "volunteers": 103.0, "active_volunteers": 0, "partner_churches": 9.0, "active_hosting": 8.0, "active_friendships": 10.0, "active_coaching": 4.0, "graduations": 1.0}, {"month": "September", "families": 14.0, "individuals": 45.0, "matched": 4.0, "intake": 10.0, "hosted_days": 133.0, "hosted_nights": 127.0, "volunteers": 103.0, "active_volunteers": 0, "partner_churches": 9.0, "active_hosting": 12.0, "active_friendships": 21.0, "active_coaching": 5.0, "graduations": 3.0}, {"month": "October", "families": 10.0, "individuals": 39.0, "matched": 1.0, "intake": 5.0, "hosted_days": 132.0, "hosted_nights": 95.0, "volunteers": 103.0, "active_volunteers": 0, "partner_churches": 10.0, "active_hosting": 8.0, "active_friendships": 4.0, "active_coaching": 3.0, "graduations": 2.0}, {"month": "November", "families": 17.0, "individuals": 70.0, "matched": 7.0, "intake": 13.0, "hosted_days": 78.0, "hosted_nights": 66.0, "volunteers": 106.0, "active_volunteers": 0, "partner_churches": 10.0, "active_hosting": 6.0, "active_friendships": 8.0, "active_coaching": 2.0, "graduations": 0.0}, {"month": "December", "families": 17.0, "individuals": 73.0, "matched": 3.0, "intake": 6.0, "hosted_days": 73.0, "hosted_nights": 59.0, "volunteers": 109.0, "active_volunteers": 0, "partner_churches": 10.0, "active_hosting": 8.0, "active_friendships": 7.0, "active_coaching": 2.0, "graduations": 0.0}]}, "All Areas": {"avg_families": 112.0, "avg_individuals": 423.7, "avg_volunteers": 809.4, "avg_active_volunteers": 0, "avg_partner_churches": 57.9, "avg_hosting": 29.8, "avg_friendships": 84.6, "avg_coaching": 19.9, "avg_relationships": 134.2, "unique_families": 274, "unique_individuals": 1034, "total_intake": 615, "total_opened": 315, "total_matched": 189, "total_graduations": 62, "total_hosted_days": 3250, "total_hosted_nights": 3215, "total_hosted": 6465, "total_service_hours": 50890, "dec_families": 121, "dec_individuals": 458, "dec_volunteers": 866, "dec_active_volunteers": 0, "dec_partner_churches": 65, "dec_hosting": 32, "dec_friendships": 112, "dec_coaching": 21, "dec_relationships": 165, "ind_fam_ratio": 3.8, "monthly_data": [{"month": "January", "families": 100.0, "individuals": 327.0, "matched": 15.0, "intake": 48.0, "hosted_days": 285.0, "hosted_nights": 200.0, "volunteers": 799.0, "active_volunteers": 0, "partner_churches": 54.0, "active_hosting": 25.0, "active_friendships": 66.0, "active_coaching": 19.0, "graduations": 3.0}, {"month": "February", "families": 105.0, "individuals": 345.0, "matched": 12.0, "intake": 57.0, "hosted_days": 367.0, "hosted_nights": 378.0, "volunteers": 795.0, "active_volunteers": 0, "partner_churches": 54.0, "active_hosting": 30.0, "active_friendships": 58.0, "active_coaching": 19.0, "graduations": 6.0}, {"month": "March", "families": 105.0, "individuals": 387.0, "matched": 23.0, "intake": 51.0, "hosted_days": 304.0, "hosted_nights": 262.0, "volunteers": 800.0, "active_volunteers": 0, "partner_churches": 54.0, "active_hosting": 21.0, "active_friendships": 52.0, "active_coaching": 17.0, "graduations": 2.0}, {"month": "April", "families": 111.0, "individuals": 421.0, "matched": 17.0, "intake": 55.0, "hosted_days": 277.0, "hosted_nights": 259.0, "volunteers": 805.0, "active_volunteers": 0, "partner_churches": 55.0, "active_hosting": 30.0, "active_friendships": 64.0, "active_coaching": 17.0, "graduations": 4.0}, {"month": "May", "families": 124.0, "individuals": 475.0, "matched": 20.0, "intake": 48.0, "hosted_days": 284.0, "hosted_nights": 301.0, "volunteers": 797.0, "active_volunteers": 0, "partner_churches": 56.0, "active_hosting": 22.0, "active_friendships": 84.0, "active_coaching": 26.0, "graduations": 6.0}, {"month": "June", "families": 110.0, "individuals": 434.0, "matched": 12.0, "intake": 48.0, "hosted_days": 235.0, "hosted_nights": 266.0, "volunteers": 798.0, "active_volunteers": 0, "partner_churches": 56.0, "active_hosting": 25.0, "active_friendships": 84.0, "active_coaching": 23.0, "graduations": 2.0}, {"month": "July", "families": 111.0, "individuals": 477.0, "matched": 12.0, "intake": 45.0, "hosted_days": 307.0, "hosted_nights": 288.0, "volunteers": 801.0, "active_volunteers": 0, "partner_churches": 57.0, "active_hosting": 30.0, "active_friendships": 87.0, "active_coaching": 21.0, "graduations": 2.0}, {"month": "August", "families": 112.0, "individuals": 459.0, "matched": 13.0, "intake": 58.0, "hosted_days": 250.0, "hosted_nights": 252.0, "volunteers": 800.0, "active_volunteers": 0, "partner_churches": 59.0, "active_hosting": 38.0, "active_friendships": 97.0, "active_coaching": 18.0, "graduations": 17.0}, {"month": "September", "families": 118.0, "individuals": 446.0, "matched": 20.0, "intake": 60.0, "hosted_days": 251.0, "hosted_nights": 287.0, "volunteers": 800.0, "active_volunteers": 0, "partner_churches": 60.0, "active_hosting": 40.0, "active_friendships": 92.0, "active_coaching": 19.0, "graduations": 5.0}, {"month": "October", "families": 109.0, "individuals": 411.0, "matched": 14.0, "intake": 53.0, "hosted_days": 289.0, "hosted_nights": 301.0, "volunteers": 815.0, "active_volunteers": 0, "partner_churches": 62.0, "active_hosting": 36.0, "active_friendships": 104.0, "active_coaching": 19.0, "graduations": 7.0}, {"month": "November", "families": 118.0, "individuals": 444.0, "matched": 22.0, "intake": 55.0, "hosted_days": 202.0, "hosted_nights": 225.0, "volunteers": 837.0, "active_volunteers": 0, "partner_churches": 63.0, "active_hosting": 28.0, "active_friendships": 115.0, "active_coaching": 20.0, "graduations": 2.0}, {"month": "December", "families": 121.0, "individuals": 458.0, "matched": 9.0, "intake": 37.0, "hosted_days": 199.0, "hosted_nights": 196.0, "volunteers": 866.0, "active_volunteers": 0, "partner_churches": 65.0, "active_hosting": 32.0, "active_friendships": 112.0, "active_coaching": 21.0, "graduations": 6.0}]}}, "2025": {"Dane": {"avg_families": 4.6, "avg_individuals": 14.2, "avg_volunteers": 39.1, "avg_active_volunteers": 3.7, "avg_partner_churches": 1.8, "avg_hosting": 0.2, "avg_friendships": 2.7, "avg_coaching": 0.5, "avg_relationships": 3.3, "unique_families": 8, "unique_individuals": 24, "total_intake": 20, "total_opened": 12, "total_matched": 6, "total_graduations": 5, "total_hosted_days": 5, "total_hosted_nights": 0, "total_hosted": 5, "total_service_hours": 156, "dec_families": 4, "dec_individuals": 10, "dec_volunteers": 43, "dec_active_volunteers": 3, "dec_partner_churches": 2, "dec_hosting": 0, "dec_friendships": 2, "dec_coaching": 1, "dec_relationships": 3, "ind_fam_ratio": 3.0, "monthly_data": [{"month": "January", "families": 2.0, "individuals": 7.0, "matched": 0.0, "intake": 2.0, "hosted_days": 0.0, "hosted_nights": 0.0, "volunteers": 42.0, "active_volunteers": 2.0, "partner_churches": 2.0, "active_hosting": 0.0, "active_friendships": 2.0, "active_coaching": 0.0, "graduations": 0.0}, {"month": "February", "families": 5.0, "individuals": 18.0, "matched": 0.0, "intake": 1.0, "hosted_days": 0.0, "hosted_nights": 0.0, "volunteers": 0.0, "active_volunteers": 2.0, "partner_churches": 0.0, "active_hosting": 0.0, "active_friendships": 1.0, "active_coaching": 0.0, "graduations": 0.0}, {"month": "March", "families": 7.0, "individuals": 25.0, "matched": 1.0, "intake": 2.0, "hosted_days": 2.0, "hosted_nights": 0.0, "volunteers": 38.0, "active_volunteers": 3.0, "partner_churches": 2.0, "active_hosting": 0.0, "active_friendships": 1.0, "active_coaching": 0.0, "graduations": 0.0}, {"month": "April", "families": 7.0, "individuals": 27.0, "matched": 0.0, "intake": 2.0, "hosted_days": 1.0, "hosted_nights": 0.0, "volunteers": 51.0, "active_volunteers": 3.0, "partner_churches": 2.0, "active_hosting": 0.0, "active_friendships": 1.0, "active_coaching": 0.0, "graduations": 0.0}, {"month": "May", "families": 3.0, "individuals": 6.0, "matched": 1.0, "intake": 3.0, "hosted_days": 0.0, "hosted_nights": 0.0, "volunteers": 51.0, "active_volunteers": 5.0, "partner_churches": 2.0, "active_hosting": 0.0, "active_friendships": 4.0, "active_coaching": 0.0, "graduations": 1.0}, {"month": "June", "families": 4.0, "individuals": 9.0, "matched": 0.0, "intake": 2.0, "hosted_days": 0.0, "hosted_nights": 0.0, "volunteers": 40.0, "active_volunteers": 1.0, "partner_churches": 2.0, "active_hosting": 0.0, "active_friendships": 1.0, "active_coaching": 0.0, "graduations": 1.0}, {"month": "July", "families": 3.0, "individuals": 10.0, "matched": 1.0, "intake": 3.0, "hosted_days": 1.0, "hosted_nights": 0.0, "volunteers": 40.0, "active_volunteers": 3.0, "partner_churches": 2.0, "active_hosting": 1.0, "active_friendships": 1.0, "active_coaching": 1.0, "graduations": 1.0}, {"month": "August", "families": 4.0, "individuals": 12.0, "matched": 1.0, "intake": 1.0, "hosted_days": 1.0, "hosted_nights": 0.0, "volunteers": 41.0, "active_volunteers": 4.0, "partner_churches": 2.0, "active_hosting": 1.0, "active_friendships": 4.0, "active_coaching": 1.0, "graduations": 0.0}, {"month": "September", "families": 5.0, "individuals": 15.0, "matched": 1.0, "intake": 2.0, "hosted_days": 0.0, "hosted_nights": 0.0, "volunteers": 41.0, "active_volunteers": 6.0, "partner_churches": 2.0, "active_hosting": 0.0, "active_friendships": 5.0, "active_coaching": 1.0, "graduations": 0.0}, {"month": "October", "families": 5.0, "individuals": 15.0, "matched": 0.0, "intake": 0.0, "hosted_days": 0.0, "hosted_nights": 0.0, "volunteers": 41.0, "active_volunteers": 6.0, "partner_churches": 2.0, "active_hosting": 0.0, "active_friendships": 5.0, "active_coaching": 1.0, "graduations": 0.0}, {"month": "November", "families": 6.0, "individuals": 17.0, "matched": 1.0, "intake": 1.0, "hosted_days": 0.0, "hosted_nights": 0.0, "volunteers": 41.0, "active_volunteers": 6.0, "partner_churches": 2.0, "active_hosting": 0.0, "active_friendships": 5.0, "active_coaching": 1.0, "graduations": 2.0}, {"month": "December", "families": 4.0, "individuals": 10.0, "matched": 0.0, "intake": 1.0, "hosted_days": 0.0, "hosted_nights": 0.0, "volunteers": 43.0, "active_volunteers": 3.0, "partner_churches": 2.0, "active_hosting": 0.0, "active_friendships": 2.0, "active_coaching": 1.0, "graduations": 0.0}]}, "Kenosha/Racine": {"avg_families": 21.3, "avg_individuals": 80.6, "avg_volunteers": 93.7, "avg_active_volunteers": 39.8, "avg_partner_churches": 3.6, "avg_hosting": 2.5, "avg_friendships": 27.6, "avg_coaching": 3.8, "avg_relationships": 33.8, "unique_families": 43, "unique_individuals": 163, "total_intake": 119, "total_opened": 43, "total_matched": 27, "total_graduations": 28, "total_hosted_days": 281, "total_hosted_nights": 252, "total_hosted": 533, "total_service_hours": 9820, "dec_families": 23, "dec_individuals": 81, "dec_volunteers": 103, "dec_active_volunteers": 41, "dec_partner_churches": 4, "dec_hosting": 2, "dec_friendships": 34, "dec_coaching": 4, "dec_relationships": 40, "ind_fam_ratio": 3.8, "monthly_data": [{"month": "January", "families": 20.0, "individuals": 87.0, "matched": 4.0, "intake": 9.0, "hosted_days": 0.0, "hosted_nights": 0.0, "volunteers": 90.0, "active_volunteers": 0, "partner_churches": 4.0, "active_hosting": 0.0, "active_friendships": 29.0, "active_coaching": 1.0, "graduations": 0.0}, {"month": "February", "families": 20.0, "individuals": 87.0, "matched": 0.0, "intake": 9.0, "hosted_days": 5.0, "hosted_nights": 3.0, "volunteers": 93.0, "active_volunteers": 0, "partner_churches": 3.0, "active_hosting": 3.0, "active_friendships": 30.0, "active_coaching": 1.0, "graduations": 1.0}, {"month": "March", "families": 20.0, "individuals": 86.0, "matched": 2.0, "intake": 10.0, "hosted_days": 35.0, "hosted_nights": 31.0, "volunteers": 87.0, "active_volunteers": 0, "partner_churches": 3.0, "active_hosting": 2.0, "active_friendships": 27.0, "active_coaching": 1.0, "graduations": 5.0}, {"month": "April", "families": 19.0, "individuals": 85.0, "matched": 3.0, "intake": 13.0, "hosted_days": 35.0, "hosted_nights": 30.0, "volunteers": 89.0, "active_volunteers": 0, "partner_churches": 3.0, "active_hosting": 3.0, "active_friendships": 30.0, "active_coaching": 0.0, "graduations": 1.0}, {"month": "May", "families": 25.0, "individuals": 91.0, "matched": 0.0, "intake": 3.0, "hosted_days": 29.0, "hosted_nights": 19.0, "volunteers": 90.0, "active_volunteers": 35.0, "partner_churches": 3.0, "active_hosting": 3.0, "active_friendships": 31.0, "active_coaching": 5.0, "graduations": 1.0}, {"month": "June", "families": 26.0, "individuals": 92.0, "matched": 4.0, "intake": 13.0, "hosted_days": 1.0, "hosted_nights": 0.0, "volunteers": 91.0, "active_volunteers": 32.0, "partner_churches": 3.0, "active_hosting": 1.0, "active_friendships": 26.0, "active_coaching": 5.0, "graduations": 5.0}, {"month": "July", "families": 21.0, "individuals": 73.0, "matched": 4.0, "intake": 7.0, "hosted_days": 22.0, "hosted_nights": 18.0, "volunteers": 92.0, "active_volunteers": 41.0, "partner_churches": 4.0, "active_hosting": 4.0, "active_friendships": 26.0, "active_coaching": 7.0, "graduations": 7.0}, {"month": "August", "families": 17.0, "individuals": 58.0, "matched": 1.0, "intake": 7.0, "hosted_days": 27.0, "hosted_nights": 26.0, "volunteers": 92.0, "active_volunteers": 41.0, "partner_churches": 4.0, "active_hosting": 1.0, "active_friendships": 21.0, "active_coaching": 7.0, "graduations": 0.0}, {"month": "September", "families": 23.0, "individuals": 82.0, "matched": 1.0, "intake": 11.0, "hosted_days": 31.0, "hosted_nights": 30.0, "volunteers": 97.0, "active_volunteers": 41.0, "partner_churches": 4.0, "active_hosting": 4.0, "active_friendships": 22.0, "active_coaching": 6.0, "graduations": 1.0}, {"month": "October", "families": 23.0, "individuals": 80.0, "matched": 0.0, "intake": 10.0, "hosted_days": 34.0, "hosted_nights": 33.0, "volunteers": 99.0, "active_volunteers": 48.0, "partner_churches": 4.0, "active_hosting": 4.0, "active_friendships": 29.0, "active_coaching": 4.0, "graduations": 3.0}, {"month": "November", "families": 19.0, "individuals": 65.0, "matched": 2.0, "intake": 14.0, "hosted_days": 31.0, "hosted_nights": 31.0, "volunteers": 101.0, "active_volunteers": 39.0, "partner_churches": 4.0, "active_hosting": 3.0, "active_friendships": 26.0, "active_coaching": 4.0, "graduations": 1.0}, {"month": "December", "families": 23.0, "individuals": 81.0, "matched": 6.0, "intake": 13.0, "hosted_days": 31.0, "hosted_nights": 31.0, "volunteers": 103.0, "active_volunteers": 41.0, "partner_churches": 4.0, "active_hosting": 2.0, "active_friendships": 34.0, "active_coaching": 4.0, "graduations": 3.0}]}, "Milwaukee": {"avg_families": 37.6, "avg_individuals": 126.2, "avg_volunteers": 269.8, "avg_active_volunteers": 118.1, "avg_partner_churches": 15.6, "avg_hosting": 13.9, "avg_friendships": 35.9, "avg_coaching": 9.9, "avg_relationships": 59.8, "unique_families": 139, "unique_individuals": 466, "total_intake": 369, "total_opened": 148, "total_matched": 117, "total_graduations": 39, "total_hosted_days": 1227, "total_hosted_nights": 903, "total_hosted": 2130, "total_service_hours": 51257, "dec_families": 31, "dec_individuals": 112, "dec_volunteers": 298, "dec_active_volunteers": 132, "dec_partner_churches": 18, "dec_hosting": 14, "dec_friendships": 42, "dec_coaching": 9, "dec_relationships": 65, "ind_fam_ratio": 3.4, "monthly_data": [{"month": "January", "families": 32.0, "individuals": 95.0, "matched": 10.0, "intake": 16.0, "hosted_days": 102.0, "hosted_nights": 87.0, "volunteers": 269.0, "active_volunteers": 0, "partner_churches": 15.0, "active_hosting": 7.0, "active_friendships": 28.0, "active_coaching": 8.0, "graduations": 3.0}, {"month": "February", "families": 34.0, "individuals": 95.0, "matched": 6.0, "intake": 13.0, "hosted_days": 137.0, "hosted_nights": 102.0, "volunteers": 264.0, "active_volunteers": 0, "partner_churches": 15.0, "active_hosting": 14.0, "active_friendships": 32.0, "active_coaching": 11.0, "graduations": 5.0}, {"month": "March", "families": 35.0, "individuals": 121.0, "matched": 5.0, "intake": 22.0, "hosted_days": 86.0, "hosted_nights": 58.0, "volunteers": 261.0, "active_volunteers": 0, "partner_churches": 15.0, "active_hosting": 15.0, "active_friendships": 33.0, "active_coaching": 9.0, "graduations": 4.0}, {"month": "April", "families": 36.0, "individuals": 122.0, "matched": 6.0, "intake": 28.0, "hosted_days": 83.0, "hosted_nights": 54.0, "volunteers": 259.0, "active_volunteers": 115.0, "partner_churches": 15.0, "active_hosting": 12.0, "active_friendships": 32.0, "active_coaching": 9.0, "graduations": 4.0}, {"month": "May", "families": 40.0, "individuals": 137.0, "matched": 11.0, "intake": 30.0, "hosted_days": 73.0, "hosted_nights": 46.0, "volunteers": 259.0, "active_volunteers": 97.0, "partner_churches": 15.0, "active_hosting": 12.0, "active_friendships": 35.0, "active_coaching": 10.0, "graduations": 4.0}, {"month": "June", "families": 38.0, "individuals": 130.0, "matched": 11.0, "intake": 34.0, "hosted_days": 134.0, "hosted_nights": 90.0, "volunteers": 260.0, "active_volunteers": 117.0, "partner_churches": 15.0, "active_hosting": 18.0, "active_friendships": 34.0, "active_coaching": 12.0, "graduations": 2.0}, {"month": "July", "families": 42.0, "individuals": 151.0, "matched": 13.0, "intake": 35.0, "hosted_days": 80.0, "hosted_nights": 50.0, "volunteers": 264.0, "active_volunteers": 114.0, "partner_churches": 15.0, "active_hosting": 15.0, "active_friendships": 32.0, "active_coaching": 13.0, "graduations": 2.0}, {"month": "August", "families": 39.0, "individuals": 148.0, "matched": 7.0, "intake": 38.0, "hosted_days": 98.0, "hosted_nights": 64.0, "volunteers": 270.0, "active_volunteers": 117.0, "partner_churches": 15.0, "active_hosting": 13.0, "active_friendships": 33.0, "active_coaching": 13.0, "graduations": 2.0}, {"month": "September", "families": 46.0, "individuals": 146.0, "matched": 13.0, "intake": 43.0, "hosted_days": 112.0, "hosted_nights": 88.0, "volunteers": 270.0, "active_volunteers": 100.0, "partner_churches": 15.0, "active_hosting": 21.0, "active_friendships": 44.0, "active_coaching": 10.0, "graduations": 4.0}, {"month": "October", "families": 41.0, "individuals": 132.0, "matched": 16.0, "intake": 35.0, "hosted_days": 84.0, "hosted_nights": 65.0, "volunteers": 272.0, "active_volunteers": 118.0, "partner_churches": 16.0, "active_hosting": 14.0, "active_friendships": 44.0, "active_coaching": 7.0, "graduations": 2.0}, {"month": "November", "families": 37.0, "individuals": 125.0, "matched": 14.0, "intake": 45.0, "hosted_days": 118.0, "hosted_nights": 101.0, "volunteers": 292.0, "active_volunteers": 153.0, "partner_churches": 18.0, "active_hosting": 12.0, "active_friendships": 42.0, "active_coaching": 8.0, "graduations": 6.0}, {"month": "December", "families": 31.0, "individuals": 112.0, "matched": 5.0, "intake": 30.0, "hosted_days": 120.0, "hosted_nights": 98.0, "volunteers": 298.0, "active_volunteers": 132.0, "partner_churches": 18.0, "active_hosting": 14.0, "active_friendships": 42.0, "active_coaching": 9.0, "graduations": 1.0}]}, "Northeast": {"avg_families": 44.6, "avg_individuals": 156.6, "avg_volunteers": 248.0, "avg_active_volunteers": 0, "avg_partner_churches": 11.2, "avg_hosting": 16.0, "avg_friendships": 26.1, "avg_coaching": 9.6, "avg_relationships": 51.7, "unique_families": 77, "unique_individuals": 269, "total_intake": 108, "total_opened": 43, "total_matched": 39, "total_graduations": 0, "total_hosted_days": 301, "total_hosted_nights": 577, "total_hosted": 878, "total_service_hours": 19778, "dec_families": 44, "dec_individuals": 156, "dec_volunteers": 278, "dec_active_volunteers": 0, "dec_partner_churches": 12, "dec_hosting": 17, "dec_friendships": 25, "dec_coaching": 10, "dec_relationships": 52, "ind_fam_ratio": 3.5, "monthly_data": [{"month": "January", "families": 41.0, "individuals": 138.0, "matched": 3.0, "intake": 17.0, "hosted_days": 23.0, "hosted_nights": 71.0, "volunteers": 204.0, "active_volunteers": 0, "partner_churches": 9.0, "active_hosting": 15.0, "active_friendships": 34.0, "active_coaching": 8.0, "graduations": 0.0}, {"month": "February", "families": 38.0, "individuals": 129.0, "matched": 1.0, "intake": 6.0, "hosted_days": 13.0, "hosted_nights": 27.0, "volunteers": 204.0, "active_volunteers": 0, "partner_churches": 9.0, "active_hosting": 15.0, "active_friendships": 31.0, "active_coaching": 8.0, "graduations": 0.0}, {"month": "March", "families": 38.0, "individuals": 129.0, "matched": 4.0, "intake": 13.0, "hosted_days": 36.0, "hosted_nights": 32.0, "volunteers": 236.0, "active_volunteers": 0, "partner_churches": 11.0, "active_hosting": 16.0, "active_friendships": 32.0, "active_coaching": 8.0, "graduations": 0.0}, {"month": "April", "families": 41.0, "individuals": 142.0, "matched": 5.0, "intake": 9.0, "hosted_days": 17.0, "hosted_nights": 48.0, "volunteers": 236.0, "active_volunteers": 0, "partner_churches": 11.0, "active_hosting": 16.0, "active_friendships": 31.0, "active_coaching": 9.0, "graduations": 0.0}, {"month": "May", "families": 44.0, "individuals": 151.0, "matched": 4.0, "intake": 11.0, "hosted_days": 22.0, "hosted_nights": 54.0, "volunteers": 236.0, "active_volunteers": 0, "partner_churches": 11.0, "active_hosting": 11.0, "active_friendships": 14.0, "active_coaching": 10.0, "graduations": 0.0}, {"month": "June", "families": 48.0, "individuals": 180.0, "matched": 5.0, "intake": 14.0, "hosted_days": 22.0, "hosted_nights": 29.0, "volunteers": 236.0, "active_volunteers": 0, "partner_churches": 11.0, "active_hosting": 18.0, "active_friendships": 21.0, "active_coaching": 11.0, "graduations": 0.0}, {"month": "July", "families": 58.0, "individuals": 212.0, "matched": 5.0, "intake": 17.0, "hosted_days": 59.0, "hosted_nights": 16.0, "volunteers": 250.0, "active_volunteers": 0, "partner_churches": 12.0, "active_hosting": 18.0, "active_friendships": 27.0, "active_coaching": 11.0, "graduations": 0.0}, {"month": "August", "families": 54.0, "individuals": 200.0, "matched": 4.0, "intake": 8.0, "hosted_days": 30.0, "hosted_nights": 17.0, "volunteers": 262.0, "active_volunteers": 0, "partner_churches": 12.0, "active_hosting": 17.0, "active_friendships": 26.0, "active_coaching": 10.0, "graduations": 0.0}, {"month": "September", "families": 47.0, "individuals": 158.0, "matched": 0.0, "intake": 2.0, "hosted_days": 16.0, "hosted_nights": 24.0, "volunteers": 278.0, "active_volunteers": 0, "partner_churches": 12.0, "active_hosting": 16.0, "active_friendships": 23.0, "active_coaching": 10.0, "graduations": 0.0}, {"month": "October", "families": 40.0, "individuals": 134.0, "matched": 2.0, "intake": 3.0, "hosted_days": 23.0, "hosted_nights": 114.0, "volunteers": 278.0, "active_volunteers": 0, "partner_churches": 12.0, "active_hosting": 16.0, "active_friendships": 25.0, "active_coaching": 10.0, "graduations": 0.0}, {"month": "November", "families": 42.0, "individuals": 150.0, "matched": 2.0, "intake": 2.0, "hosted_days": 30.0, "hosted_nights": 75.0, "volunteers": 278.0, "active_volunteers": 0, "partner_churches": 12.0, "active_hosting": 17.0, "active_friendships": 24.0, "active_coaching": 10.0, "graduations": 0.0}, {"month": "December", "families": 44.0, "individuals": 156.0, "matched": 4.0, "intake": 6.0, "hosted_days": 10.0, "hosted_nights": 70.0, "volunteers": 278.0, "active_volunteers": 0, "partner_churches": 12.0, "active_hosting": 17.0, "active_friendships": 25.0, "active_coaching": 10.0, "graduations": 0.0}]}, "Sauk": {"avg_families": 1.5, "avg_individuals": 6.7, "avg_volunteers": 23.3, "avg_active_volunteers": 5.8, "avg_partner_churches": 3.2, "avg_hosting": 0.8, "avg_friendships": 1.3, "avg_coaching": 1.0, "avg_relationships": 3.1, "unique_families": 4, "unique_individuals": 18, "total_intake": 7, "total_opened": 5, "total_matched": 4, "total_graduations": 2, "total_hosted_days": 81, "total_hosted_nights": 78, "total_hosted": 159, "total_service_hours": 4302, "dec_families": 3, "dec_individuals": 13, "dec_volunteers": 31, "dec_active_volunteers": 9, "dec_partner_churches": 4, "dec_hosting": 2, "dec_friendships": 3, "dec_coaching": 5, "dec_relationships": 10, "ind_fam_ratio": 4.5, "monthly_data": [{"month": "January", "families": 0.0, "individuals": 0.0, "matched": 0.0, "intake": 0.0, "hosted_days": 0.0, "hosted_nights": 0.0, "volunteers": 19.0, "active_volunteers": 0, "partner_churches": 2.0, "active_hosting": 0.0, "active_friendships": 0.0, "active_coaching": 0.0, "graduations": 0.0}, {"month": "February", "families": 0.0, "individuals": 0.0, "matched": 0.0, "intake": 0.0, "hosted_days": 0.0, "hosted_nights": 0.0, "volunteers": 19.0, "active_volunteers": 0, "partner_churches": 3.0, "active_hosting": 0.0, "active_friendships": 0.0, "active_coaching": 0.0, "graduations": 0.0}, {"month": "March", "families": 0.0, "individuals": 0.0, "matched": 0.0, "intake": 0.0, "hosted_days": 0.0, "hosted_nights": 0.0, "volunteers": 19.0, "active_volunteers": 0, "partner_churches": 3.0, "active_hosting": 0.0, "active_friendships": 0.0, "active_coaching": 0.0, "graduations": 0.0}, {"month": "April", "families": 0.0, "individuals": 0.0, "matched": 0.0, "intake": 0.0, "hosted_days": 0.0, "hosted_nights": 0.0, "volunteers": 19.0, "active_volunteers": 0, "partner_churches": 3.0, "active_hosting": 0.0, "active_friendships": 0.0, "active_coaching": 0.0, "graduations": 0.0}, {"month": "May", "families": 0.0, "individuals": 0.0, "matched": 0.0, "intake": 1.0, "hosted_days": 0.0, "hosted_nights": 0.0, "volunteers": 19.0, "active_volunteers": 0, "partner_churches": 3.0, "active_hosting": 0.0, "active_friendships": 0.0, "active_coaching": 0.0, "graduations": 0.0}, {"month": "June", "families": 1.0, "individuals": 5.0, "matched": 1.0, "intake": 2.0, "hosted_days": 2.0, "hosted_nights": 1.0, "volunteers": 19.0, "active_volunteers": 0, "partner_churches": 3.0, "active_hosting": 1.0, "active_friendships": 2.0, "active_coaching": 1.0, "graduations": 0.0}, {"month": "July", "families": 2.0, "individuals": 10.0, "matched": 1.0, "intake": 1.0, "hosted_days": 0.0, "hosted_nights": 0.0, "volunteers": 21.0, "active_volunteers": 1.0, "partner_churches": 3.0, "active_hosting": 0.0, "active_friendships": 1.0, "active_coaching": 0.0, "graduations": 0.0}, {"month": "August", "families": 3.0, "individuals": 13.0, "matched": 0.0, "intake": 1.0, "hosted_days": 0.0, "hosted_nights": 0.0, "volunteers": 27.0, "active_volunteers": 2.0, "partner_churches": 3.0, "active_hosting": 0.0, "active_friendships": 2.0, "active_coaching": 0.0, "graduations": 0.0}, {"month": "September", "families": 3.0, "individuals": 13.0, "matched": 0.0, "intake": 0.0, "hosted_days": 4.0, "hosted_nights": 2.0, "volunteers": 28.0, "active_volunteers": 5.0, "partner_churches": 3.0, "active_hosting": 1.0, "active_friendships": 2.0, "active_coaching": 0.0, "graduations": 0.0}, {"month": "October", "families": 3.0, "individuals": 13.0, "matched": 0.0, "intake": 0.0, "hosted_days": 31.0, "hosted_nights": 31.0, "volunteers": 28.0, "active_volunteers": 9.0, "partner_churches": 4.0, "active_hosting": 2.0, "active_friendships": 3.0, "active_coaching": 3.0, "graduations": 1.0}, {"month": "November", "families": 3.0, "individuals": 13.0, "matched": 1.0, "intake": 1.0, "hosted_days": 30.0, "hosted_nights": 30.0, "volunteers": 31.0, "active_volunteers": 9.0, "partner_churches": 4.0, "active_hosting": 3.0, "active_friendships": 3.0, "active_coaching": 3.0, "graduations": 1.0}, {"month": "December", "families": 3.0, "individuals": 13.0, "matched": 1.0, "intake": 1.0, "hosted_days": 14.0, "hosted_nights": 14.0, "volunteers": 31.0, "active_volunteers": 9.0, "partner_churches": 4.0, "active_hosting": 2.0, "active_friendships": 3.0, "active_coaching": 5.0, "graduations": 0.0}]}, "South Central": {"avg_families": 19.8, "avg_individuals": 62.4, "avg_volunteers": 222.3, "avg_active_volunteers": 40.2, "avg_partner_churches": 26.0, "avg_hosting": 3.2, "avg_friendships": 14.4, "avg_coaching": 2.5, "avg_relationships": 20.2, "unique_families": 45, "unique_individuals": 146, "total_intake": 139, "total_opened": 43, "total_matched": 23, "total_graduations": 25, "total_hosted_days": 237, "total_hosted_nights": 133, "total_hosted": 370, "total_service_hours": 7426, "dec_families": 25, "dec_individuals": 72, "dec_volunteers": 204, "dec_active_volunteers": 37, "dec_partner_churches": 26, "dec_hosting": 5, "dec_friendships": 14, "dec_coaching": 2, "dec_relationships": 21, "ind_fam_ratio": 3.2, "monthly_data": [{"month": "January", "families": 25.0, "individuals": 64.0, "matched": 3.0, "intake": 9.0, "hosted_days": 4.0, "hosted_nights": 0.0, "volunteers": 229.0, "active_volunteers": 68.0, "partner_churches": 26.0, "active_hosting": 4.0, "active_friendships": 22.0, "active_coaching": 2.0, "graduations": 2.0}, {"month": "February", "families": 24.0, "individuals": 76.0, "matched": 2.0, "intake": 8.0, "hosted_days": 26.0, "hosted_nights": 0.0, "volunteers": 230.0, "active_volunteers": 46.0, "partner_churches": 26.0, "active_hosting": 1.0, "active_friendships": 19.0, "active_coaching": 1.0, "graduations": 6.0}, {"month": "March", "families": 14.0, "individuals": 41.0, "matched": 0.0, "intake": 9.0, "hosted_days": 20.0, "hosted_nights": 0.0, "volunteers": 229.0, "active_volunteers": 33.0, "partner_churches": 26.0, "active_hosting": 1.0, "active_friendships": 14.0, "active_coaching": 3.0, "graduations": 3.0}, {"month": "April", "families": 17.0, "individuals": 58.0, "matched": 3.0, "intake": 15.0, "hosted_days": 8.0, "hosted_nights": 0.0, "volunteers": 234.0, "active_volunteers": 40.0, "partner_churches": 26.0, "active_hosting": 1.0, "active_friendships": 15.0, "active_coaching": 2.0, "graduations": 0.0}, {"month": "May", "families": 15.0, "individuals": 50.0, "matched": 0.0, "intake": 14.0, "hosted_days": 23.0, "hosted_nights": 17.0, "volunteers": 235.0, "active_volunteers": 39.0, "partner_churches": 26.0, "active_hosting": 4.0, "active_friendships": 13.0, "active_coaching": 2.0, "graduations": 1.0}, {"month": "June", "families": 11.0, "individuals": 56.0, "matched": 2.0, "intake": 14.0, "hosted_days": 53.0, "hosted_nights": 43.0, "volunteers": 231.0, "active_volunteers": 41.0, "partner_churches": 26.0, "active_hosting": 3.0, "active_friendships": 14.0, "active_coaching": 2.0, "graduations": 1.0}, {"month": "July", "families": 18.0, "individuals": 57.0, "matched": 2.0, "intake": 11.0, "hosted_days": 36.0, "hosted_nights": 26.0, "volunteers": 232.0, "active_volunteers": 38.0, "partner_churches": 26.0, "active_hosting": 5.0, "active_friendships": 13.0, "active_coaching": 2.0, "graduations": 1.0}, {"month": "August", "families": 20.0, "individuals": 60.0, "matched": 4.0, "intake": 11.0, "hosted_days": 13.0, "hosted_nights": 7.0, "volunteers": 215.0, "active_volunteers": 50.0, "partner_churches": 26.0, "active_hosting": 6.0, "active_friendships": 12.0, "active_coaching": 4.0, "graduations": 1.0}, {"month": "September", "families": 23.0, "individuals": 74.0, "matched": 2.0, "intake": 13.0, "hosted_days": 2.0, "hosted_nights": 0.0, "volunteers": 211.0, "active_volunteers": 29.0, "partner_churches": 26.0, "active_hosting": 3.0, "active_friendships": 11.0, "active_coaching": 4.0, "graduations": 4.0}, {"month": "October", "families": 22.0, "individuals": 63.0, "matched": 2.0, "intake": 11.0, "hosted_days": 2.0, "hosted_nights": 0.0, "volunteers": 211.0, "active_volunteers": 25.0, "partner_churches": 26.0, "active_hosting": 3.0, "active_friendships": 14.0, "active_coaching": 3.0, "graduations": 1.0}, {"month": "November", "families": 24.0, "individuals": 78.0, "matched": 3.0, "intake": 14.0, "hosted_days": 11.0, "hosted_nights": 10.0, "volunteers": 207.0, "active_volunteers": 37.0, "partner_churches": 26.0, "active_hosting": 3.0, "active_friendships": 12.0, "active_coaching": 3.0, "graduations": 2.0}, {"month": "December", "families": 25.0, "individuals": 72.0, "matched": 0.0, "intake": 10.0, "hosted_days": 39.0, "hosted_nights": 30.0, "volunteers": 204.0, "active_volunteers": 37.0, "partner_churches": 26.0, "active_hosting": 5.0, "active_friendships": 14.0, "active_coaching": 2.0, "graduations": 3.0}]}, "Western WI": {"avg_families": 17.4, "avg_individuals": 59.7, "avg_volunteers": 121.6, "avg_active_volunteers": 32.4, "avg_partner_churches": 14.5, "avg_hosting": 3.8, "avg_friendships": 9.8, "avg_coaching": 3.3, "avg_relationships": 16.9, "unique_families": 51, "unique_individuals": 175, "total_intake": 103, "total_opened": 48, "total_matched": 34, "total_graduations": 8, "total_hosted_days": 256, "total_hosted_nights": 130, "total_hosted": 386, "total_service_hours": 4659, "dec_families": 18, "dec_individuals": 58, "dec_volunteers": 142, "dec_active_volunteers": 40, "dec_partner_churches": 17, "dec_hosting": 6, "dec_friendships": 10, "dec_coaching": 4, "dec_relationships": 20, "ind_fam_ratio": 3.4, "monthly_data": [{"month": "January", "families": 18.0, "individuals": 78.0, "matched": 1.0, "intake": 17.0, "hosted_days": 10.0, "hosted_nights": 20.0, "volunteers": 122.0, "active_volunteers": 0, "partner_churches": 14.0, "active_hosting": 5.0, "active_friendships": 5.0, "active_coaching": 3.0, "graduations": 0.0}, {"month": "February", "families": 21.0, "individuals": 77.0, "matched": 4.0, "intake": 12.0, "hosted_days": 37.0, "hosted_nights": 8.0, "volunteers": 129.0, "active_volunteers": 0, "partner_churches": 15.0, "active_hosting": 7.0, "active_friendships": 10.0, "active_coaching": 4.0, "graduations": 0.0}, {"month": "March", "families": 21.0, "individuals": 78.0, "matched": 4.0, "intake": 8.0, "hosted_days": 36.0, "hosted_nights": 18.0, "volunteers": 133.0, "active_volunteers": 0, "partner_churches": 15.0, "active_hosting": 4.0, "active_friendships": 14.0, "active_coaching": 4.0, "graduations": 0.0}, {"month": "April", "families": 15.0, "individuals": 60.0, "matched": 3.0, "intake": 10.0, "hosted_days": 14.0, "hosted_nights": 4.0, "volunteers": 134.0, "active_volunteers": 0, "partner_churches": 15.0, "active_hosting": 1.0, "active_friendships": 7.0, "active_coaching": 3.0, "graduations": 1.0}, {"month": "May", "families": 16.0, "individuals": 60.0, "matched": 2.0, "intake": 7.0, "hosted_days": 17.0, "hosted_nights": 0.0, "volunteers": 131.0, "active_volunteers": 20.0, "partner_churches": 16.0, "active_hosting": 5.0, "active_friendships": 8.0, "active_coaching": 3.0, "graduations": 1.0}, {"month": "June", "families": 14.0, "individuals": 52.0, "matched": 2.0, "intake": 5.0, "hosted_days": 3.0, "hosted_nights": 8.0, "volunteers": 130.0, "active_volunteers": 29.0, "partner_churches": 16.0, "active_hosting": 3.0, "active_friendships": 11.0, "active_coaching": 3.0, "graduations": 0.0}, {"month": "July", "families": 16.0, "individuals": 53.0, "matched": 3.0, "intake": 9.0, "hosted_days": 7.0, "hosted_nights": 0.0, "volunteers": 136.0, "active_volunteers": 21.0, "partner_churches": 16.0, "active_hosting": 3.0, "active_friendships": 10.0, "active_coaching": 4.0, "graduations": 0.0}, {"month": "August", "families": 19.0, "individuals": 56.0, "matched": 3.0, "intake": 8.0, "hosted_days": 17.0, "hosted_nights": 5.0, "volunteers": 131.0, "active_volunteers": 44.0, "partner_churches": 16.0, "active_hosting": 3.0, "active_friendships": 11.0, "active_coaching": 3.0, "graduations": 3.0}, {"month": "September", "families": 14.0, "individuals": 40.0, "matched": 0.0, "intake": 9.0, "hosted_days": 58.0, "hosted_nights": 44.0, "volunteers": 130.0, "active_volunteers": 40.0, "partner_churches": 17.0, "active_hosting": 2.0, "active_friendships": 11.0, "active_coaching": 3.0, "graduations": 2.0}, {"month": "October", "families": 17.0, "individuals": 46.0, "matched": 7.0, "intake": 11.0, "hosted_days": 28.0, "hosted_nights": 23.0, "volunteers": 0.0, "active_volunteers": 35.0, "partner_churches": 0.0, "active_hosting": 2.0, "active_friendships": 14.0, "active_coaching": 3.0, "graduations": 0.0}, {"month": "November", "families": 20.0, "individuals": 58.0, "matched": 5.0, "intake": 6.0, "hosted_days": 9.0, "hosted_nights": 0.0, "volunteers": 141.0, "active_volunteers": 30.0, "partner_churches": 17.0, "active_hosting": 4.0, "active_friendships": 7.0, "active_coaching": 3.0, "graduations": 0.0}, {"month": "December", "families": 18.0, "individuals": 58.0, "matched": 0.0, "intake": 1.0, "hosted_days": 20.0, "hosted_nights": 0.0, "volunteers": 142.0, "active_volunteers": 40.0, "partner_churches": 17.0, "active_hosting": 6.0, "active_friendships": 10.0, "active_coaching": 4.0, "graduations": 1.0}]}, "All Areas": {"avg_families": 146.8, "avg_individuals": 506.3, "avg_volunteers": 1017.8, "avg_active_volunteers": 183.5, "avg_partner_churches": 75.8, "avg_hosting": 40.3, "avg_friendships": 117.8, "avg_coaching": 30.6, "avg_relationships": 188.8, "unique_families": 367, "unique_individuals": 1267, "total_intake": 865, "total_opened": 342, "total_matched": 250, "total_graduations": 107, "total_hosted_days": 2388, "total_hosted_nights": 2073, "total_hosted": 4461, "total_service_hours": 97397, "dec_families": 148, "dec_individuals": 502, "dec_volunteers": 1099, "dec_active_volunteers": 262, "dec_partner_churches": 83, "dec_hosting": 46, "dec_friendships": 130, "dec_coaching": 35, "dec_relationships": 211, "ind_fam_ratio": 3.5, "monthly_data": [{"month": "January", "families": 138.0, "individuals": 469.0, "matched": 21.0, "intake": 70.0, "hosted_days": 139.0, "hosted_nights": 178.0, "volunteers": 975.0, "active_volunteers": 70.0, "partner_churches": 72.0, "active_hosting": 31.0, "active_friendships": 120.0, "active_coaching": 22.0, "graduations": 5.0}, {"month": "February", "families": 142.0, "individuals": 482.0, "matched": 13.0, "intake": 49.0, "hosted_days": 218.0, "hosted_nights": 140.0, "volunteers": 939.0, "active_volunteers": 48.0, "partner_churches": 71.0, "active_hosting": 40.0, "active_friendships": 123.0, "active_coaching": 25.0, "graduations": 12.0}, {"month": "March", "families": 135.0, "individuals": 480.0, "matched": 16.0, "intake": 64.0, "hosted_days": 215.0, "hosted_nights": 139.0, "volunteers": 1003.0, "active_volunteers": 36.0, "partner_churches": 75.0, "active_hosting": 38.0, "active_friendships": 121.0, "active_coaching": 25.0, "graduations": 12.0}, {"month": "April", "families": 135.0, "individuals": 494.0, "matched": 20.0, "intake": 77.0, "hosted_days": 158.0, "hosted_nights": 136.0, "volunteers": 1022.0, "active_volunteers": 158.0, "partner_churches": 75.0, "active_hosting": 33.0, "active_friendships": 116.0, "active_coaching": 23.0, "graduations": 6.0}, {"month": "May", "families": 143.0, "individuals": 495.0, "matched": 18.0, "intake": 69.0, "hosted_days": 164.0, "hosted_nights": 136.0, "volunteers": 1021.0, "active_volunteers": 196.0, "partner_churches": 76.0, "active_hosting": 35.0, "active_friendships": 105.0, "active_coaching": 30.0, "graduations": 8.0}, {"month": "June", "families": 142.0, "individuals": 524.0, "matched": 25.0, "intake": 84.0, "hosted_days": 215.0, "hosted_nights": 171.0, "volunteers": 1007.0, "active_volunteers": 220.0, "partner_churches": 76.0, "active_hosting": 44.0, "active_friendships": 109.0, "active_coaching": 34.0, "graduations": 9.0}, {"month": "July", "families": 160.0, "individuals": 566.0, "matched": 29.0, "intake": 83.0, "hosted_days": 205.0, "hosted_nights": 110.0, "volunteers": 1035.0, "active_volunteers": 218.0, "partner_churches": 78.0, "active_hosting": 46.0, "active_friendships": 110.0, "active_coaching": 38.0, "graduations": 11.0}, {"month": "August", "families": 156.0, "individuals": 547.0, "matched": 20.0, "intake": 74.0, "hosted_days": 186.0, "hosted_nights": 119.0, "volunteers": 1038.0, "active_volunteers": 258.0, "partner_churches": 78.0, "active_hosting": 41.0, "active_friendships": 109.0, "active_coaching": 38.0, "graduations": 6.0}, {"month": "September", "families": 161.0, "individuals": 528.0, "matched": 17.0, "intake": 80.0, "hosted_days": 223.0, "hosted_nights": 188.0, "volunteers": 1055.0, "active_volunteers": 221.0, "partner_churches": 79.0, "active_hosting": 47.0, "active_friendships": 118.0, "active_coaching": 34.0, "graduations": 11.0}, {"month": "October", "families": 151.0, "individuals": 483.0, "matched": 27.0, "intake": 70.0, "hosted_days": 202.0, "hosted_nights": 266.0, "volunteers": 929.0, "active_volunteers": 241.0, "partner_churches": 64.0, "active_hosting": 41.0, "active_friendships": 134.0, "active_coaching": 31.0, "graduations": 7.0}, {"month": "November", "families": 151.0, "individuals": 506.0, "matched": 28.0, "intake": 83.0, "hosted_days": 229.0, "hosted_nights": 247.0, "volunteers": 1091.0, "active_volunteers": 274.0, "partner_churches": 83.0, "active_hosting": 42.0, "active_friendships": 119.0, "active_coaching": 32.0, "graduations": 12.0}, {"month": "December", "families": 148.0, "individuals": 502.0, "matched": 16.0, "intake": 62.0, "hosted_days": 234.0, "hosted_nights": 243.0, "volunteers": 1099.0, "active_volunteers": 262.0, "partner_churches": 83.0, "active_hosting": 46.0, "active_friendships": 130.0, "active_coaching": 35.0, "graduations": 8.0}]}}, "2023": {"Dane": {"avg_families": 0, "avg_individuals": 10.0, "avg_volunteers": 12.0, "avg_partner_churches": 0, "avg_relationships": 8.0, "unique_families": 0, "unique_individuals": 0, "total_intake": 0, "total_opened": 0, "total_matched": 0, "total_graduations": 0, "total_hosted_days": 0, "total_hosted_nights": 0, "total_hosted": 0, "total_service_hours": 0, "dec_families": 0, "dec_individuals": 0, "dec_volunteers": 0, "ind_fam_ratio": 0, "monthly_data": []}, "Kenosha/Racine": {"avg_families": 0, "avg_individuals": 31.0, "avg_volunteers": 48.0, "avg_partner_churches": 0, "avg_relationships": 24.0, "unique_families": 0, "unique_individuals": 0, "total_intake": 48, "total_opened": 31, "total_matched": 0, "total_graduations": 0, "total_hosted_days": 0, "total_hosted_nights": 0, "total_hosted": 0, "total_service_hours": 0, "dec_families": 0, "dec_individuals": 0, "dec_volunteers": 0, "ind_fam_ratio": 0, "monthly_data": []}, "Milwaukee": {"avg_families": 0, "avg_individuals": 60.0, "avg_volunteers": 84.53, "avg_partner_churches": 0, "avg_relationships": 80.0, "unique_families": 0, "unique_individuals": 0, "total_intake": 0, "total_opened": 0, "total_matched": 0, "total_graduations": 0, "total_hosted_days": 0, "total_hosted_nights": 0, "total_hosted": 0, "total_service_hours": 0, "dec_families": 0, "dec_individuals": 0, "dec_volunteers": 0, "ind_fam_ratio": 0, "monthly_data": []}, "Northeast": {"avg_families": 0, "avg_individuals": 44.0, "avg_volunteers": 49.66, "avg_partner_churches": 0, "avg_relationships": 21.0, "unique_families": 0, "unique_individuals": 0, "total_intake": 0, "total_opened": 0, "total_matched": 0, "total_graduations": 0, "total_hosted_days": 0, "total_hosted_nights": 0, "total_hosted": 0, "total_service_hours": 0, "dec_families": 0, "dec_individuals": 0, "dec_volunteers": 0, "ind_fam_ratio": 0, "monthly_data": []}, "Sauk": {"avg_families": 0, "avg_individuals": 0.0, "avg_volunteers": 2.0, "avg_partner_churches": 0, "avg_relationships": 0.0, "unique_families": 0, "unique_individuals": 0, "total_intake": 0, "total_opened": 0, "total_matched": 0, "total_graduations": 0, "total_hosted_days": 0, "total_hosted_nights": 0, "total_hosted": 0, "total_service_hours": 0, "dec_families": 0, "dec_individuals": 0, "dec_volunteers": 0, "ind_fam_ratio": 0, "monthly_data": []}, "South Central": {"avg_families": 0, "avg_individuals": 30.0, "avg_volunteers": 55.0, "avg_partner_churches": 0, "avg_relationships": 48.0, "unique_families": 0, "unique_individuals": 0, "total_intake": 158, "total_opened": 76, "total_matched": 0, "total_graduations": 32, "total_hosted_days": 1656, "total_hosted_nights": 1610, "total_hosted": 3266, "total_service_hours": 0, "dec_families": 0, "dec_individuals": 0, "dec_volunteers": 0, "ind_fam_ratio": 0, "monthly_data": []}, "Western WI": {"avg_families": 0, "avg_individuals": 15.0, "avg_volunteers": 27.0, "avg_partner_churches": 0, "avg_relationships": 9.0, "unique_families": 0, "unique_individuals": 0, "total_intake": 0, "total_opened": 0, "total_matched": 0, "total_graduations": 0, "total_hosted_days": 0, "total_hosted_nights": 0, "total_hosted": 0, "total_service_hours": 0, "dec_families": 0, "dec_individuals": 0, "dec_volunteers": 0, "ind_fam_ratio": 0, "monthly_data": []}, "All Areas": {"avg_families": 0, "avg_individuals": 190.0, "avg_volunteers": 278.2, "avg_partner_churches": 0, "avg_relationships": 190.0, "unique_families": 0, "unique_individuals": 0, "total_intake": 206, "total_opened": 107, "total_matched": 0, "total_graduations": 32, "total_hosted_days": 1656, "total_hosted_nights": 1610, "total_hosted": 3266, "total_service_hours": 0, "dec_families": 0, "dec_individuals": 0, "dec_volunteers": 0, "ind_fam_ratio": 0, "monthly_data": []}}}};
+
+const $=s=>document.querySelector(s);
+const fmt=n=>n==null?'—':n<0?'('+('$'+Math.abs(Math.round(n)).toLocaleString())+')':'$'+Math.round(n).toLocaleString();
+const fmtK=n=>n==null?'—':Math.abs(n)>=1e6?'$'+(n/1e6).toFixed(2)+'M':Math.abs(n)>=1e3?'$'+(n/1e3).toFixed(1)+'K':'$'+Math.round(n);
+const fmtN=n=>n==null?'—':Math.round(n).toLocaleString();
+const fmtPct=n=>n==null?'—':(n*100).toFixed(1)+'%';
+const yoy=(a,b)=>(!a||a===0)?null:(b-a)/Math.abs(a);
+const chgCls=(v,lower)=>{if(v==null)return'neutral';if(lower)return v<-0.05?'good':v>0.05?'bad':'neutral';return v>0.05?'good':v<-0.05?'bad':'neutral'};
+const pill=(a,b)=>{if(!a||!b||a===0)return'';const c=(b-a)/Math.abs(a);return` <span class="pill ${c>0.02?'up':c<-0.02?'down':''}">${c>0?'+':''}${(c*100).toFixed(0)}%</span>`};
+const barColors=['a','b','c','d','e','f','g'];
+
+let area='All Areas';
+
+// Populate area tabs
+const tabsEl=$('#areaTabs');
+D.areas.forEach(a=>{const b=document.createElement('button');b.className='area-btn'+(a==='All Areas'?' active':'');b.textContent=a;b.dataset.area=a;b.addEventListener('click',()=>{document.querySelectorAll('.area-btn').forEach(x=>x.classList.remove('active'));b.classList.add('active');area=a;render()});tabsEl.appendChild(b)});
+
+// Nav
+document.querySelectorAll('.nav-btn').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('.nav-btn').forEach(x=>x.classList.remove('active'));b.classList.add('active');
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));$('#'+b.dataset.s).classList.add('active');
+  document.querySelector('.area-filter').style.display=b.dataset.s==='state-mission'?'none':'flex';
+}));
+
+function render(){
+  const renderKpis=(kpis,el,opts)=>{let h='';kpis.forEach((k,i)=>{const dir=k.c>0.01?'up':k.c<-0.01?'down':'flat';const click=opts&&opts.onClick?` onclick="${opts.onClick}(${i})"`:'';
+h+=`<div class="kpi-card ${k.cl||''}${opts&&opts.onClick&&i===0?' kpi-selected':''}"${click}><div class="kpi-label">${k.l}</div><div class="kpi-value">${k.v}</div><div class="kpi-change ${dir}">${k.c!=null?((k.c>0?'\u25b2':k.c<0?'\u25bc':'\u2014')+' '+(k.c>0?'+':'')+(k.c*100).toFixed(1)+'% vs 2024'):(k.sub||'')}</div></div>`;});$(el).innerHTML=h;};
+
+  const a=area, fa=D.field_areas;
+  document.querySelectorAll('.area-badge').forEach(b=>b.textContent=a);
+
+  // ===== OVERVIEW =====
+  const pnl=D.pnl_by_area[a];
+  const inc=pnl[8], prog=pnl[14], admin=pnl[15], opex=pnl[16], net_inc=pnl[18];
+  const m24=D.mission['2024'][a]||{}, m25=D.mission['2025'][a]||{};
+
+  $('#ov-desc').textContent=a==='All Areas'
+    ?'Three-year financial and mission performance across all Wisconsin areas.'
+    :'Financial and mission performance for the '+a+' area.';
+
+  const rs=D.rev_sharing;
+  const rs25=rs['2025'][a]||0, rs24=rs['2024'][a]||0;
+  const net25=(inc['2025']||0)+rs25, net24=(inc['2024']||0)+rs24;
+
+  const eq=D.equity[a]||0;
+  const b26=D.budget_2026[a]||{};
+  const b26TotalExp=(b26.total_expenses||0)+(b26.cogs||0);
+  const b26Rev=b26.revenue||0;
+  const monthlyBurn=b26TotalExp/12;
+  const reserveMonths=monthlyBurn>0?eq/monthlyBurn:0;
+  const reservePct=b26TotalExp>0?eq/b26TotalExp:0;
+  const act25Exp=(opex['2025']||0)+(pnl[9]['2025']||0);
+  const targetRes=D.target_reserve[a]||0;
+  const reservePctTarget=targetRes>0?eq/targetRes:0;
+  const staffing26=D.staffing_2026[a]||0;
+  const staffingMonths=staffing26>0?eq/(staffing26/12):0;
+  const growthFunds=eq-targetRes;
+
+  const lf=D.local_fundraising;
+  const df25=lf['2025'][a]||0, df24=lf['2024'][a]||0;
+  const opex25=opex['2025']||0, opex24=opex['2024']||0;
+
+  // Financial area bars renderer
+  window.renderFinAreaBars=(metricKey,label,el)=>{
+    const fas=D.field_areas.filter(ar=>ar!=='WI Statewide'&&ar!=='Chippewa Valley');
+    let h='';
+    const getFinVal=(ar,key)=>{
+      const p=D.pnl_by_area[ar];
+      if(key==='direct_fundraising') return D.local_fundraising['2025'][ar]||0;
+      if(key==='opex') return p[16]['2025']||0;
+      if(key==='net_income') return p[18]['2025']||0;
+      if(key==='equity') return D.equity[ar]||0;
+      if(key==='gross_revenue') return p[8]['2025']||0;
+      if(key==='cogs') return p[9]['2025']||0;
+      return 0;
+    };
+    const getFinVal24=(ar,key)=>{
+      const p=D.pnl_by_area[ar];
+      if(key==='direct_fundraising') return D.local_fundraising['2024'][ar]||0;
+      if(key==='opex') return p[16]['2024']||0;
+      if(key==='net_income') return p[18]['2024']||0;
+      if(key==='equity') return 0;
+      if(key==='gross_revenue') return p[8]['2024']||0;
+      if(key==='cogs') return p[9]['2024']||0;
+      return 0;
+    };
+    // Special case: equity shows min target + growth funds split
+    if(metricKey==='equity'){
+      const maxEq=Math.max(...fas.map(ar=>D.equity[ar]||0));
+      [...fas].sort((x,y)=>(D.equity[y]||0)-(D.equity[x]||0)).forEach(ar=>{
+        const aeq=D.equity[ar]||0;
+        const atr=D.target_reserve[ar]||0;
+        const aGrowth=aeq-atr;
+        const tgtW=maxEq>0?Math.min(Math.min(aeq,atr)/maxEq*100,100):0;
+        const growthW=aGrowth>0?(aGrowth/maxEq*100):0;
+        const gapW=aGrowth<0?((atr-aeq)/maxEq*100):0;
+        h+=`<div class="bar-group"><div class="bar-label"><span>${ar}</span><span>${fmtK(aeq)}</span></div><div class="bar-track"><div style="display:flex;height:100%;border-radius:4px;overflow:hidden"><div style="width:${tgtW}%;background:var(--warm)"></div>${growthW>0?`<div style="width:${growthW}%;background:var(--accent)"></div>`:''}${gapW>0?`<div style="width:${gapW}%;background:#e0e0e0"></div>`:''}</div></div></div>`;
+      });
+      h+=`<div class="legend" style="margin-top:0.6rem"><div class="legend-item"><div class="legend-dot" style="background:var(--warm)"></div>Staffing Reserve (4.5 Mo)</div><div class="legend-item"><div class="legend-dot" style="background:var(--accent)"></div>Growth Funds</div></div>`;
+      $(el).innerHTML=h;
+      return;
+    }
+    const maxV=Math.max(...fas.map(ar=>Math.max(Math.abs(getFinVal(ar,metricKey)),Math.abs(getFinVal24(ar,metricKey)))));
+    [...fas].sort((x,y)=>getFinVal(y,metricKey)-getFinVal(x,metricKey)).forEach(ar=>{
+      const v5=getFinVal(ar,metricKey);
+      const v4=getFinVal24(ar,metricKey);
+      const c=yoy(v4,v5);
+      const chgCol=c!=null?(c>0?'var(--green)':'var(--rose)'):'var(--text-dim)';
+      const chgPct=c!=null?(c>=0?'+':'')+(c*100).toFixed(0)+'%':'';
+      const arw=c!=null?(c>0?'\u2192 ':'\u2192 '):'';
+      h+=`<div style="margin-bottom:0.9rem">`;
+      h+=`<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:0.25rem"><span style="font-size:0.8rem;font-weight:700;color:var(--text)">${ar}</span><span style="font-size:0.8rem;font-weight:800;color:${v5<0?'var(--rose)':'var(--text)'}">${fmtK(v5)}</span></div>`;
+      h+=`<div style="display:flex;align-items:center;gap:0.4rem;margin-bottom:0.12rem"><span style="font-size:0.65rem;color:var(--text-dim);width:28px">2024</span><div class="bar-track" style="flex:1;height:12px"><div class="bar-fill b" style="width:${maxV>0?Math.max(v4,0)/maxV*100:0}%"></div></div><span style="font-size:0.68rem;color:var(--text-dim);min-width:50px;text-align:right">${fmtK(v4)}</span></div>`;
+      h+=`<div style="display:flex;align-items:center;gap:0.4rem;margin-bottom:0.12rem"><span style="font-size:0.65rem;color:var(--text-dim);width:28px">2025</span><div class="bar-track" style="flex:1;height:12px"><div class="bar-fill d" style="width:${maxV>0?Math.max(v5,0)/maxV*100:0}%"></div></div><span style="font-size:0.68rem;color:var(--text-dim);min-width:50px;text-align:right">${fmtK(v5)}</span></div>`;
+      if(c!=null){h+=`<div style="text-align:right;font-size:0.65rem;font-weight:700;color:${chgCol}">${chgPct} YoY</div>`;}
+      h+=`</div>`;
+    });
+    $(el).innerHTML=h;
+  };
+
+  // Overview KPIs - clickable
+  window._ovMetrics=[
+    {l:'Direct Fundraising',k:'direct_fundraising'},
+    {l:'Operating Expenses',k:'opex'},
+    {l:'Net Income',k:'net_income'},
+    {l:'Cash Balance',k:'equity'},
+  ];
+
+  const ovKpiData=[
+    {l:'2025 Direct Fundraising',v:fmtK(df25),c:yoy(df24,df25),cl:''},
+    {l:'2025 Operating Expenses',v:fmtK(opex25),c:yoy(opex24,opex25),cl:'warm',inv:1},
+    {l:'2025 Net Income',v:fmt(net_inc['2025']),c:yoy(net_inc['2024'],net_inc['2025']),cl:net_inc['2025']>=0?'green':'rose'},
+    {l:'Cash Balance (Dec 2025)',v:fmtK(eq),cl:'green',sub:'Available Reserves'},
+  ];
+
+  if(a==='All Areas'){
+    renderKpis(ovKpiData,'#ov-kpis',{onClick:'clickOvKpi'});
+    renderFinAreaBars('direct_fundraising','Direct Fundraising','#ov-area-bars');
+  } else {
+    // Single area: no area bars, show without clickable
+    renderKpis(ovKpiData,'#ov-kpis');
+    $('#ov-area-bars').innerHTML='';
+    $('#ov-area-title').textContent='';
+  }
+
+  // ===== DETAILED FINANCIALS =====
+  const grossRev25=inc['2025']||0, grossRev24=inc['2024']||0;
+  const cogs25=pnl[9]['2025']||0, cogs24=pnl[9]['2024']||0;
+
+  window._dfMetrics=[
+    {l:'Gross Revenue',k:'gross_revenue'},
+    {l:'Fundraising Costs',k:'cogs'},
+    {l:'Direct Fundraising',k:'direct_fundraising'},
+    {l:'Operating Expenses',k:'opex'},
+    {l:'Net Income',k:'net_income'},
+  ];
+
+  const dfkpis=[
+    {l:'2025 Gross Revenue',v:fmtK(grossRev25),c:yoy(grossRev24,grossRev25),cl:''},
+    {l:'2025 Fundraising Costs',v:fmtK(cogs25),c:yoy(cogs24,cogs25),cl:'warm',inv:1},
+    {l:'2025 Direct Fundraising',v:fmtK(df25),c:yoy(df24,df25),cl:'green'},
+    {l:'2025 Operating Expenses',v:fmtK(opex25),c:yoy(opex24,opex25),cl:'rose',inv:1},
+    {l:'2025 Net Income',v:fmt(net_inc['2025']),c:yoy(net_inc['2024'],net_inc['2025']),cl:net_inc['2025']>=0?'blue':'rose'},
+  ];
+
+  if(a==='All Areas'){
+    renderKpis(dfkpis,'#df-kpis',{onClick:'clickDfKpi'});
+    renderFinAreaBars('gross_revenue','Gross Revenue','#df-area-bars');
+  } else {
+    renderKpis(dfkpis,'#df-kpis');
+    $('#df-area-bars').innerHTML='';
+    $('#df-area-title').textContent='';
+  }
+
+  // Revenue Sources chart
+  const allSrc=new Set();
+  [2023,2024,2025].forEach(y=>(D.rev_sources[y][a]||[]).forEach(s=>allSrc.add(s.label)));
+  const srcLabels=[...allSrc];
+  const getVal=(yr,lbl)=>(D.rev_sources[yr][a]||[]).find(s=>s.label===lbl)?.value||0;
+  const srcMaxAll=Math.max(...srcLabels.map(l=>Math.max(getVal('2023',l),getVal('2024',l),getVal('2025',l))));
+  h='';
+  srcLabels.sort((x,y)=>getVal('2025',y)-getVal('2025',x)).forEach(l=>{
+    h+=`<div style="margin-bottom:1rem"><div style="font-size:0.78rem;font-weight:700;color:var(--text-muted);margin-bottom:0.3rem">${l}</div>`;
+    [['2023','a'],['2024','b'],['2025','d']].forEach(([yr,c])=>{
+      const v=getVal(yr,l);
+      h+=`<div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.15rem"><span style="font-size:0.68rem;color:var(--text-dim);width:28px">${yr}</span><div class="bar-track" style="flex:1;height:14px"><div class="bar-fill ${c}" style="width:${srcMaxAll?v/srcMaxAll*100:0}%"></div></div><span style="font-size:0.72rem;min-width:50px;text-align:right">${fmtK(v)}</span></div>`;
+    });
+    h+=`</div>`;
+  });
+  if($('#rev-bars'))$('#rev-bars').innerHTML=h||'<p style="color:var(--text-dim)">No revenue data.</p>';
+
+  // Expense Composition — 3-year stacked bars (program vs admin vs COGS, using rose color scheme)
+  h='';
+  [2023,2024,2025].forEach(yr=>{
+    const d=D.exp_by_area[yr]?.[a];
+    if(!d||!d.total) return;
+    const total=d.program+d.admin+d.fundraising;
+    const pP=total>0?d.program/total*100:0;
+    const aP=total>0?d.admin/total*100:0;
+    const fP=total>0?d.fundraising/total*100:0;
+    h+=`<div style="margin-bottom:1rem"><div class="bar-label"><span>${yr}</span><span>${fmtK(total)}</span></div>`;
+    h+=`<div class="bar-track" style="height:24px"><div style="display:flex;height:100%;border-radius:4px;overflow:hidden">`;
+    h+=`<div style="width:${pP}%;background:var(--rose);display:flex;align-items:center;justify-content:center"><span style="color:#fff;font-size:0.6rem;font-weight:700">${pP>=12?'Program '+Math.round(pP)+'%':''}</span></div>`;
+    h+=`<div style="width:${aP}%;background:rgba(190,60,60,0.5);display:flex;align-items:center;justify-content:center"><span style="color:#fff;font-size:0.6rem;font-weight:700">${aP>=10?'Admin '+Math.round(aP)+'%':''}</span></div>`;
+    h+=`<div style="width:${fP}%;background:rgba(190,60,60,0.25);display:flex;align-items:center;justify-content:center"><span style="color:var(--text-muted);font-size:0.6rem;font-weight:700">${fP>=8?'COGS '+Math.round(fP)+'%':''}</span></div>`;
+    h+=`</div></div></div>`;
+  });
+  h+=`<div class="legend" style="margin-top:0.3rem"><div class="legend-item"><div class="legend-dot" style="background:var(--rose)"></div>Program</div><div class="legend-item"><div class="legend-dot" style="background:rgba(190,60,60,0.5)"></div>Admin</div><div class="legend-item"><div class="legend-dot" style="background:rgba(190,60,60,0.25)"></div>COGS</div></div>`;
+  if($('#exp-breakdown'))$('#exp-breakdown').innerHTML=h;
+
+  // Statement of Activity — restructured
+  const rs_pnl=D.rev_sharing;
+  const rsp23=rs_pnl['2023'][a]||0,rsp24=rs_pnl['2024'][a]||0,rsp25=rs_pnl['2025'][a]||0;
+  const nf23=(pnl[8]['2023']||0)-(pnl[9]['2023']||0);
+  const nf24=(pnl[8]['2024']||0)-(pnl[9]['2024']||0);
+  const nf25=(pnl[8]['2025']||0)-(pnl[9]['2025']||0);
+
+  const vc=(v,neg)=>`<td class="${neg&&v<0?'neg':''}">${fmt(v)}</td>`;
+  const arw=(prev,cur)=>{if(!prev||!cur)return'<td class="arw"></td>';const c=prev?((cur-prev)/Math.abs(prev)*100):0;const col=c>1?'var(--green)':c<-1?'var(--rose)':'var(--text-dim)';return`<td class="arw" style="color:${col}">${c!=0?(c>0?'+':'')+c.toFixed(0)+'%':''} \u2192</td>`;};
+  const sectionHdr=(label)=>`<tr><td colspan="6" style="background:var(--surface2);color:var(--accent);font-weight:900;padding:0.5rem 0.9rem;font-size:0.72rem;text-transform:uppercase;letter-spacing:0.06em">${label}</td></tr>`;
+  const dataRow=(label,r,style)=>`<tr${style?' style="'+style+'"':''}><td>${label}</td>${vc(r['2023'])}${arw(r['2023'],r['2024'])}${vc(r['2024'])}${arw(r['2024'],r['2025'])}${vc(r['2025'],1)}</tr>`;
+  const totalRow=(label,v23,v24,v25,style)=>`<tr class="total-row"${style?' style="'+style+'"':''}><td>${label}</td>${vc(v23)}${arw(v23,v24)}${vc(v24)}${arw(v24,v25)}${vc(v25,1)}</tr>`;
+
+  h='<tbody>';
+
+  // REVENUE
+  h+=`<tr><td style="background:var(--surface2);color:var(--accent);font-weight:900;padding:0.5rem 0.9rem;font-size:0.72rem;text-transform:uppercase;letter-spacing:0.06em">Revenue</td><td style="background:var(--surface2);color:var(--accent);font-weight:700;font-size:0.72rem;text-align:right">2023</td><td style="background:var(--surface2)"></td><td style="background:var(--surface2);color:var(--accent);font-weight:700;font-size:0.72rem;text-align:right">2024</td><td style="background:var(--surface2)"></td><td style="background:var(--surface2);color:var(--accent);font-weight:700;font-size:0.72rem;text-align:right">2025</td></tr>`;
+  for(let i=0;i<8;i++) h+=dataRow(pnl[i].label,pnl[i]);
+  h+=totalRow('GROSS REVENUE',pnl[8]['2023'],pnl[8]['2024'],pnl[8]['2025']);
+
+  // FUNDRAISING COSTS (no header, white bg like program/admin)
+  h+=dataRow(pnl[9].label,pnl[9],'background:#fff');
+  h+=totalRow('NET FUNDRAISING',nf23,nf24,nf25);
+
+  // OPERATING EXPENSES
+  h+=sectionHdr('Operating Expenses');
+
+  // Program costs (white bg, rose left border)
+  for(let i=10;i<=13;i++) h+=dataRow(pnl[i].label,pnl[i],'background:#fff;border-left:3px solid var(--rose)');
+  h+=`<tr style="background:#fff;border-left:3px solid var(--rose);font-weight:900"><td>${pnl[14].label}</td>${vc(pnl[14]['2023'])}${arw(pnl[14]['2023'],pnl[14]['2024'])}${vc(pnl[14]['2024'])}${arw(pnl[14]['2024'],pnl[14]['2025'])}${vc(pnl[14]['2025'],1)}</tr>`;
+
+  // Admin costs (white bg, lighter rose left border)
+  h+=`<tr style="background:#fff;border-left:3px solid rgba(190,60,60,0.5);font-weight:900"><td>${pnl[15].label}</td>${vc(pnl[15]['2023'])}${arw(pnl[15]['2023'],pnl[15]['2024'])}${vc(pnl[15]['2024'])}${arw(pnl[15]['2024'],pnl[15]['2025'])}${vc(pnl[15]['2025'],1)}</tr>`;
+
+  // Total Operating Expenses
+  h+=totalRow('TOTAL OPERATING EXPENSES',pnl[16]['2023'],pnl[16]['2024'],pnl[16]['2025']);
+
+  // Net Operating Income
+  h+=totalRow('NET OPERATING INCOME',pnl[17]['2023'],pnl[17]['2024'],pnl[17]['2025']);
+
+  // Revenue Sharing (no header, white bg)
+  if(rsp23||rsp24||rsp25||a!=='All Areas'){
+    const yrsr1=yoy(rsp23,rsp24),yrsr2=yoy(rsp24,rsp25);
+    h+=`<tr style="background:var(--accent-dim)"><td style="font-weight:700;color:var(--accent)">Revenue Sharing (Net Transfers)</td><td style="color:${rsp23>=0?'var(--green)':'var(--rose)'}">${rsp23?fmt(rsp23):'\u2014'}</td><td style="color:${rsp24>=0?'var(--green)':'var(--rose)'}">${rsp24?fmt(rsp24):'\u2014'}</td><td style="color:${rsp25>=0?'var(--green)':'var(--rose)'}">${rsp25?fmt(rsp25):'\u2014'}</td><td>${yrsr1!=null&&rsp23?fmtPct(yrsr1):'\u2014'}</td><td>${yrsr2!=null&&rsp24?fmtPct(yrsr2):'\u2014'}</td></tr>`;
+  }
+
+  // Net Income
+  h+=totalRow('NET INCOME',pnl[18]['2023'],pnl[18]['2024'],pnl[18]['2025'],'background:var(--green-dim)');
+
+  h+='</tbody>';
+  $('#pnl-table').innerHTML=h;
+
+  // ===== IMPACT OVERVIEW =====
+  const mv23=(D.mission_v2||{})['2023']||{};
+  const mv24=(D.mission_v2||{})['2024']||{};
+  const mv25=(D.mission_v2||{})['2025']||{};
+  const mAll23=mv23['All Areas']||{};
+  const mAll24=mv24['All Areas']||{};
+  const mAll25=mv25['All Areas']||{};
+  const ti25s=mAll25.total_intake||0,to25s=mAll25.total_opened||0,tm25s=mAll25.total_matched||0;
+  const compAreas=D.field_areas.filter(ar=>ar!=='WI Statewide'&&ar!=='Chippewa Valley');
+
+  // Helper for KPI rendering (supports clickable mode)
+
+  // Helper for area comparison bars
+  window.renderAreaBars=(metric,label,el,dec)=>{
+    let h='';
+    const maxV=Math.max(...compAreas.map(ar=>(mv25[ar]||{})[metric]||0));
+    [...compAreas].sort((x,y)=>((mv25[y]||{})[metric]||0)-((mv25[x]||{})[metric]||0)).forEach(ar=>{
+      const v5=(mv25[ar]||{})[metric]||0;
+      const v4=(mv24[ar]||{})[metric]||0;
+      const c=yoy(v4,v5);
+      const chgCol=c!=null?(c>0?'var(--green)':'var(--rose)'):'var(--text-dim)';
+      const chgTxt=c!=null?' <span style="color:'+chgCol+';font-size:0.65rem;font-weight:700">'+(c>=0?'+':'')+(c*100).toFixed(0)+'%</span>':'';
+      const display=dec?v5.toFixed(1):fmtN(Math.round(v5));
+      h+=`<div class="bar-group"><div class="bar-label"><span>${ar}${chgTxt}</span><span>${display}</span></div><div class="bar-track"><div class="bar-fill d" style="width:${maxV>0?v5/maxV*100:0}%"></div></div></div>`;
+    });
+    $(el).innerHTML=h;
+  };
+
+  // ── PEOPLE SERVED ──
+  const newFamS=tm25s;
+  const newFam24S=mAll24.total_matched||0;
+  const ratioS=mAll25.ind_fam_ratio||3;
+  const newIndS=Math.round(newFamS*ratioS);
+  const newInd24S=Math.round(newFam24S*(mAll24.ind_fam_ratio||3));
+  window._peopleMetrics=[
+    {l:'Avg Monthly Families',k:'avg_families',dec:true},
+    {l:'Avg Monthly Individuals',k:'avg_individuals',dec:true},
+    {l:'Unique Families (Annual)',k:'unique_families',dec:false},
+    {l:'New Families Served',k:'total_matched',dec:false},
+    {l:'Est. New Individuals',k:null,dec:false},
+    {l:'Graduations',k:'total_graduations',dec:false},
+    {l:'Hosted Days+Nights',k:'total_hosted',dec:false},
+  ];
+  renderKpis([
+    {l:'Avg Monthly Families',v:(mAll25.avg_families||0).toFixed(0),c:yoy(mAll24.avg_families,mAll25.avg_families),cl:'',sub:'Active Caseload'},
+    {l:'Avg Monthly Individuals',v:(mAll25.avg_individuals||0).toFixed(0),c:yoy(mAll24.avg_individuals,mAll25.avg_individuals),cl:'blue',sub:'Active Caseload'},
+    {l:'Unique Families (Annual)',v:fmtN(mAll25.unique_families),c:yoy(mAll24.unique_families,mAll25.unique_families),cl:'green'},
+    {l:'New Families Served',v:fmtN(newFamS),c:yoy(newFam24S,newFamS),cl:'warm'},
+    {l:'Est. New Individuals Served',v:fmtN(newIndS),c:yoy(newInd24S,newIndS),cl:''},
+    {l:'Graduations',v:fmtN(mAll25.total_graduations),c:yoy(mAll24.total_graduations,mAll25.total_graduations),cl:'rose'},
+    {l:'Hosted Days+Nights',v:fmtN(mAll25.total_hosted),c:yoy(mAll24.total_hosted,mAll25.total_hosted),cl:''},
+  ],'#sm-people-kpis',{onClick:'clickPeopleKpi'});
+
+  // People by area (default: first KPI)
+  renderAreaBars('avg_families','Avg Monthly Families','#sm-people-area',true);
+
+  // ── VOLUNTEERING ──
+  // ── VOLUNTEERING ──
+  window._volMetrics=[
+    {l:'Total Volunteers (Year-End)',k:'dec_volunteers',dec:false},
+    {l:'Avg Active Volunteers/Mo',k:'avg_active_volunteers',dec:true},
+    {l:'Partner Churches (Year-End)',k:'dec_partner_churches',dec:false},
+    {l:'Total Service Hours',k:'total_service_hours',dec:false},
+  ];
+  renderKpis([
+    {l:'Total Volunteers (Year-End)',v:fmtN(mAll25.dec_volunteers),c:yoy(mAll24.dec_volunteers,mAll25.dec_volunteers),cl:'green'},
+    {l:'Avg Active Volunteers/Mo',v:(mAll25.avg_active_volunteers||0).toFixed(0),c:yoy(mAll24.avg_active_volunteers,mAll25.avg_active_volunteers),cl:'blue',sub:mAll25.avg_active_volunteers?'':'New in 2025'},
+    {l:'Partner Churches (Year-End)',v:fmtN(mAll25.dec_partner_churches),c:yoy(mAll24.dec_partner_churches,mAll25.dec_partner_churches),cl:'warm'},
+    {l:'Total Service Hours',v:fmtN(mAll25.total_service_hours),c:yoy(mAll24.total_service_hours,mAll25.total_service_hours),cl:''},
+  ],'#sm-vol-kpis',{onClick:'clickVolKpi'});
+  renderAreaBars('dec_volunteers','Total Volunteers (Year-End)','#sm-vol-area',false);
+
+  // ── RELATIONSHIPS ──
+  window._relMetrics=[
+    {l:'Total Active Relationships',k:'avg_relationships',dec:true},
+    {l:'Hosting Relationships',k:'avg_hosting',dec:true},
+    {l:'Family Friendships',k:'avg_friendships',dec:true},
+    {l:'Family Coaching',k:'avg_coaching',dec:true},
+  ];
+  renderKpis([
+    {l:'Total Active Relationships',v:(mAll25.avg_relationships||0).toFixed(0),c:yoy(mAll24.avg_relationships,mAll25.avg_relationships),cl:'green',sub:'Avg Monthly'},
+    {l:'Hosting Relationships',v:(mAll25.avg_hosting||0).toFixed(0),c:yoy(mAll24.avg_hosting,mAll25.avg_hosting),cl:'blue',sub:'Avg Monthly'},
+    {l:'Family Friendships',v:(mAll25.avg_friendships||0).toFixed(0),c:yoy(mAll24.avg_friendships,mAll25.avg_friendships),cl:'warm',sub:'Avg Monthly'},
+    {l:'Family Coaching',v:(mAll25.avg_coaching||0).toFixed(0),c:yoy(mAll24.avg_coaching,mAll25.avg_coaching),cl:'rose',sub:'Avg Monthly'},
+  ],'#sm-rel-kpis',{onClick:'clickRelKpi'});
+  renderAreaBars('avg_relationships','Total Active Relationships','#sm-rel-area',true);
+
+  // ── INTAKE ──
+  const openRateS=to25s>0?(tm25s/to25s):0;
+  const openRate24S=(mAll24.total_opened||0)>0?((mAll24.total_matched||0)/(mAll24.total_opened||1)):0;
+  const goodFitPctS=ti25s>0?(to25s/ti25s):0;
+  const goodFit24S=(mAll24.total_intake||0)>0?((mAll24.total_opened||0)/(mAll24.total_intake||1)):0;
+  window._intakeMetrics=[
+    {l:'Total Intakes',k:'total_intake',dec:false},
+    {l:'Good Fit Rate',k:'total_opened',dec:false},
+    {l:'Open Rate',k:'total_matched',dec:false},
+    {l:'Pending Cases',k:null,dec:false},
+  ];
+  renderKpis([
+    {l:'Total Intakes',v:fmtN(ti25s),c:yoy(mAll24.total_intake,ti25s),cl:''},
+    {l:'Good Fit Rate',v:fmtPct(goodFitPctS),c:yoy(goodFit24S,goodFitPctS),cl:goodFitPctS>=0.4?'green':'warm',sub:'Of All Intakes'},
+    {l:'Open Rate (Of Good Fit Referrals)',v:fmtPct(openRateS),c:yoy(openRate24S,openRateS),cl:openRateS>=0.7?'green':'warm',sub:'Matched / Good Fits'},
+    {l:'Pending Cases',v:fmtN(mAll25.total_intake-mAll25.total_opened-(mAll25.total_intake-mAll25.total_opened-mAll25.total_matched>0?0:0)),c:null,cl:'',sub:fmtN(ti25s-to25s)+' Not Good Fit \u00b7 '+fmtN(to25s-tm25s)+' Unmatched'},
+  ],'#sm-intake-kpis',{onClick:'clickIntakeKpi'});
+
+  // Intake funnel
+  const funnelS=[
+    {l:'Total Intakes',v25:ti25s,v24:mAll24.total_intake||0,pct:null},
+    {l:'Good Fit (Opened)',v25:to25s,v24:mAll24.total_opened||0,pct:goodFitPctS},
+    {l:'Matched (Served)',v25:tm25s,v24:mAll24.total_matched||0,pct:openRateS},
+  ];
+  h='';
+  const fMaxS=Math.max(ti25s,mAll24.total_intake||0);
+  funnelS.forEach((f,i)=>{
+    const c=yoy(f.v24,f.v25);
+    const w=fMaxS>0?f.v25/fMaxS*100:0;
+    const pctLabel=f.pct!=null?' \u2014 '+(f.pct*100).toFixed(0)+'%'+(i===1?' of Intakes':' of Good Fits'):'';
+    const col=i===0?'var(--accent)':i===1?'var(--warm)':'var(--green)';
+    const chgCol=c!=null?(c>0?'var(--green)':'var(--rose)'):'var(--text-dim)';
+    const chgTxt=c!=null?' <span style="color:'+chgCol+';font-size:0.65rem">'+(c>=0?'+':'')+(c*100).toFixed(0)+'%</span>':'';
+    h+=`<div style="margin-bottom:0.5rem">`;
+    h+=`<div style="display:flex;justify-content:space-between;font-size:0.75rem;margin-bottom:0.2rem"><span style="font-weight:700;color:var(--text-muted)">${f.l}${pctLabel}</span><span style="font-weight:700">${fmtN(f.v25)}${chgTxt}</span></div>`;
+    h+=`<div class="bar-track" style="height:16px"><div style="width:${w}%;background:${col};height:100%;border-radius:4px"></div></div>`;
+    h+=`</div>`;
+  });
+  $('#sm-intake-funnel').innerHTML=h;
+
+  // Intake by area (default: total intakes)
+  renderAreaBars('total_intake','Total Intakes','#sm-intake-area',false);
+
+  // ===== LOCAL MISSION IMPACT =====
+  const ma24=mv24[a]||{};
+  const ma25=mv25[a]||{};
+  const ma23=(mv23||{})[a]||{};
+  const tiL=ma25.total_intake||0,toL=ma25.total_opened||0,tmL=ma25.total_matched||0;
+  const tiL4=ma24.total_intake||0,toL4=ma24.total_opened||0,tmL4=ma24.total_matched||0;
+
+  // Local KPIs
+  const openRateL=toL>0?(tmL/toL):0;
+  const openRate24L=toL4>0?(tmL4/toL4):0;
+  const newFamL=tmL;
+  const newFam24L=tmL4;
+  const ratioL=ma25.ind_fam_ratio||3;
+  const newIndL=Math.round(newFamL*ratioL);
+  const newInd24L=Math.round(newFam24L*(ma24.ind_fam_ratio||3));
+  const lmKpis=[
+    {l:'Avg Monthly Families',v:(ma25.avg_families||0).toFixed(0),c:yoy(ma24.avg_families,ma25.avg_families),cl:'',sub:'Active Caseload'},
+    {l:'Avg Monthly Individuals',v:(ma25.avg_individuals||0).toFixed(0),c:yoy(ma24.avg_individuals,ma25.avg_individuals),cl:'blue',sub:'Active Caseload'},
+    {l:'Unique Families (Annual)',v:fmtN(ma25.unique_families),c:yoy(ma24.unique_families,ma25.unique_families),cl:'green'},
+    {l:'New Families Served',v:fmtN(newFamL),c:yoy(newFam24L,newFamL),cl:'warm'},
+    {l:'Est. New Individuals Served',v:fmtN(newIndL),c:yoy(newInd24L,newIndL),cl:''},
+    {l:'Open Rate (Of Good Fit Referrals)',v:fmtPct(openRateL),c:yoy(openRate24L,openRateL),cl:openRateL>=0.7?'green':'warm',sub:'Matched / Good Fits'},
+    {l:'Graduations',v:fmtN(ma25.total_graduations),c:yoy(ma24.total_graduations,ma25.total_graduations),cl:'rose'},
+  ];
+  h='';
+  lmKpis.forEach(k=>{
+    const dir=k.c>0.01?'up':k.c<-0.01?'down':'flat';
+    h+=`<div class="kpi-card ${k.cl}"><div class="kpi-label">${k.l}</div><div class="kpi-value">${k.v}</div><div class="kpi-change ${dir}">${k.c!=null?((k.c>0?'\u25b2':k.c<0?'\u25bc':'\u2014')+' '+(k.c>0?'+':'')+(k.c*100).toFixed(1)+'% vs 2024'):(k.sub||'')}</div></div>`;
+  });
+  $('#lm-kpis').innerHTML=h;
+
+  // Local impact bars (3-year where available)
+  const lmBars=[
+    {l:'Avg Monthly Individuals',v23:ma23.avg_individuals||0,v24:ma24.avg_individuals||0,v25:ma25.avg_individuals||0,dec:1},
+    {l:'Avg Monthly Volunteers',v23:ma23.avg_volunteers||0,v24:ma24.avg_volunteers||0,v25:ma25.avg_volunteers||0,dec:1},
+    {l:'Unique Families',v23:0,v24:ma24.unique_families||0,v25:ma25.unique_families||0,no23:1},
+    {l:'Total Intakes',v23:ma23.total_intake||0,v24:ma24.total_intake||0,v25:ma25.total_intake||0},
+    {l:'Graduations',v23:ma23.total_graduations||0,v24:ma24.total_graduations||0,v25:ma25.total_graduations||0},
+    {l:'Hosted Days+Nights',v23:ma23.total_hosted||0,v24:ma24.total_hosted||0,v25:ma25.total_hosted||0},
+  ];
+  h='';
+  const maxLm=Math.max(...lmBars.map(m=>Math.max(m.v23,m.v24,m.v25)));
+  lmBars.forEach(m=>{
+    const c=yoy(m.v24,m.v25);
+    const chgCol=c!=null?(c>0?'var(--green)':'var(--rose)'):'var(--text-dim)';
+    const chgStr=c!=null?' <span style="font-size:0.7rem;color:'+chgCol+';font-weight:700">'+(c>=0?'+':'')+(c*100).toFixed(0)+'%</span>':'';
+    h+=`<div style="margin-bottom:0.8rem"><div style="font-size:0.78rem;font-weight:700;color:var(--text-muted);margin-bottom:0.25rem">${m.l}${chgStr}</div>`;
+    const yrs=m.v23>0&&!m.no23?[['2023',m.v23,'a'],['2024',m.v24,'b'],['2025',m.v25,'d']]:[['2024',m.v24,'b'],['2025',m.v25,'d']];
+    yrs.forEach(([yr,v,col])=>{
+      const display=m.dec?v.toFixed(1):fmtN(Math.round(v));
+      h+=`<div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.12rem"><span style="font-size:0.68rem;color:var(--text-dim);width:28px">${yr}</span><div class="bar-track" style="flex:1;height:14px"><div class="bar-fill ${col}" style="width:${maxLm>0?v/maxLm*100:0}%"></div></div><span style="font-size:0.72rem;min-width:50px;text-align:right">${display}</span></div>`;
+    });
+    h+=`</div>`;
+  });
+  $('#lm-bars').innerHTML=h;
+
+  // Local intake funnel
+  const gfL=tiL>0?(toL/tiL):0;
+  const mpL=toL>0?(tmL/toL):0;
+  const funnelL=[
+    {l:'Total Intakes',v25:tiL,v24:tiL4,pct:null},
+    {l:'Good Fit (Opened)',v25:toL,v24:toL4,pct:gfL},
+    {l:'Matched (Served)',v25:tmL,v24:tmL4,pct:mpL},
+  ];
+  h='';
+  const fMaxL=Math.max(tiL,tiL4);
+  funnelL.forEach((f,i)=>{
+    const c=yoy(f.v24,f.v25);
+    const w=fMaxL>0?f.v25/fMaxL*100:0;
+    const pctLabel=f.pct!=null?' \u2014 '+(f.pct*100).toFixed(0)+'%'+(i===1?' of Intakes':' of Good Fits'):'';
+    const col=i===0?'var(--accent)':i===1?'var(--warm)':'var(--green)';
+    const chgCol=c!=null?(c>0?'var(--green)':'var(--rose)'):'var(--text-dim)';
+    const chgTxt=c!=null?' <span style="color:'+chgCol+';font-size:0.65rem">'+(c>=0?'+':'')+(c*100).toFixed(0)+'%</span>':'';
+    h+=`<div style="margin-bottom:0.5rem">`;
+    h+=`<div style="display:flex;justify-content:space-between;font-size:0.75rem;margin-bottom:0.2rem"><span style="font-weight:700;color:var(--text-muted)">${f.l}${pctLabel}</span><span style="font-weight:700">${fmtN(f.v25)}${chgTxt}</span></div>`;
+    h+=`<div class="bar-track" style="height:16px"><div style="width:${w}%;background:${col};height:100%;border-radius:4px"></div></div>`;
+    h+=`</div>`;
+  });
+  $('#lm-funnel').innerHTML=h;
+
+  // Local detail table
+  h='<tbody>';
+  h+='<tr><td colspan="5" style="background:var(--surface2);color:var(--accent);font-weight:900;padding:0.5rem 0.9rem;font-size:0.72rem;text-transform:uppercase;letter-spacing:0.06em">Annual Unique Totals</td></tr>';
+  [{l:'Unique Families',v4:ma24.unique_families,v5:ma25.unique_families,t:1},
+   {l:'Unique Individuals (Est)',v4:ma24.unique_individuals,v5:ma25.unique_individuals,t:1}].forEach(r=>{
+    const c=yoy(r.v4,r.v5);
+    h+=`<tr class="${r.t?'total-row':''}"><td>${r.l}</td><td>${fmtN(r.v4||0)}</td><td>${fmtN(r.v5||0)}</td><td class="${c>0.05?'pos':c<-0.05?'neg':''}">${c!=null?fmtPct(c):'\u2014'}</td></tr>`;
+  });
+  h+='<tr><td colspan="5" style="background:var(--surface2);color:var(--accent);font-weight:900;padding:0.5rem 0.9rem;font-size:0.72rem;text-transform:uppercase;letter-spacing:0.06em">Monthly Averages</td></tr>';
+  [{l:'Families Served',v4:ma24.avg_families,v5:ma25.avg_families},
+   {l:'Individuals Served',v4:ma24.avg_individuals,v5:ma25.avg_individuals},
+   {l:'Active Volunteers',v4:ma24.avg_volunteers,v5:ma25.avg_volunteers},
+   {l:'Partner Churches',v4:ma24.avg_partner_churches,v5:ma25.avg_partner_churches},
+   {l:'Active Relationships',v4:ma24.avg_relationships,v5:ma25.avg_relationships}].forEach(r=>{
+    const c=yoy(r.v4,r.v5);
+    h+=`<tr><td>${r.l}</td><td>${(r.v4||0).toFixed(1)}</td><td>${(r.v5||0).toFixed(1)}</td><td class="${c>0.05?'pos':c<-0.05?'neg':''}">${c!=null?fmtPct(c):'\u2014'}</td></tr>`;
+  });
+  h+='<tr><td colspan="5" style="background:var(--surface2);color:var(--accent);font-weight:900;padding:0.5rem 0.9rem;font-size:0.72rem;text-transform:uppercase;letter-spacing:0.06em">Annual Cumulative Totals</td></tr>';
+  [{l:'Total Intakes',v4:ma24.total_intake,v5:ma25.total_intake},
+   {l:'Cases Opened (Good Fit)',v4:ma24.total_opened,v5:ma25.total_opened},
+   {l:'Cases Matched',v4:ma24.total_matched,v5:ma25.total_matched},
+   {l:'Graduations',v4:ma24.total_graduations,v5:ma25.total_graduations},
+   {l:'Hosted Days',v4:ma24.total_hosted_days,v5:ma25.total_hosted_days},
+   {l:'Hosted Nights',v4:ma24.total_hosted_nights,v5:ma25.total_hosted_nights},
+   {l:'Total Hosted',v4:ma24.total_hosted,v5:ma25.total_hosted,t:1},
+   {l:'Service Hours',v4:ma24.total_service_hours,v5:ma25.total_service_hours}].forEach(r=>{
+    const c=yoy(r.v4,r.v5);
+    h+=`<tr class="${r.t?'total-row':''}"><td>${r.l}</td><td>${fmtN(r.v4||0)}</td><td>${fmtN(r.v5||0)}</td><td class="${c>0.05?'pos':c<-0.05?'neg':''}">${c!=null?fmtPct(c):'\u2014'}</td></tr>`;
+  });
+  h+='</tbody>';
+  $('#lm-table').innerHTML='<thead><tr><th>Metric</th><th>2024</th><th>2025</th><th>Change</th></tr></thead>'+h;
+
+  // ===== OUTLOOK (in overview) =====
+  const revGrowth=inc['2025']>0?(b26Rev-inc['2025'])/inc['2025']:null;
+  const expGrowth=act25Exp>0?(b26TotalExp-act25Exp)/act25Exp:null;
+
+  // Operating Expense Growth bars (program vs admin split)
+  const exp23=pnl[16]['2023']||0;
+  const exp24=pnl[16]['2024']||0;
+  const exp25=opex['2025']||0;
+  const exp26=(b26.total_expenses||0);
+  const expMax=Math.max(exp23,exp24,exp25,exp26);
+  const prog23=prog['2023']||0,prog24=prog['2024']||0,prog25=prog['2025']||0,prog26=b26.program_costs||0;
+  const adm23=admin['2023']||0,adm24=admin['2024']||0,adm25=admin['2025']||0,adm26=b26.admin_costs||0;
+  h='';
+  [[2023,exp23,null,prog23,adm23],[2024,exp24,exp23,prog24,adm24],[2025,exp25,exp24,prog25,adm25],['2026 (Budget)',exp26,exp25,prog26,adm26]].forEach(([yr,v,prev,pv,av],i)=>{
+    const chg=prev&&prev>0?((v-prev)/prev*100).toFixed(1)+'%':'';
+    const chgColor=prev&&v>prev?'var(--rose)':prev&&v<prev?'var(--green)':'var(--text-dim)';
+    const progPct=v>0?(pv/v*100):0;
+    const admPct=v>0?(av/v*100):0;
+    const barW=expMax?v/expMax*100:0;
+    const colors=['a','b','d','e'];
+    h+=`<div class="bar-group"><div class="bar-label"><span>${yr}${chg?' <span style="font-size:0.7rem;color:'+chgColor+';font-weight:700">'+((v-prev)>=0?'+':'')+chg+'</span>':''}</span><span>${fmtK(v)}</span></div>`;
+    h+=`<div class="bar-track" style="height:24px"><div style="display:flex;height:100%;width:${barW}%;border-radius:4px;overflow:hidden">`;
+    h+=`<div style="width:${progPct}%;background:var(--rose);display:flex;align-items:center;justify-content:center"><span style="color:#fff;font-size:0.6rem;font-weight:700">${progPct>=10?Math.round(progPct)+'%':''}</span></div>`;
+    h+=`<div style="width:${admPct}%;background:rgba(190,60,60,0.5);display:flex;align-items:center;justify-content:center"><span style="color:#fff;font-size:0.6rem;font-weight:700">${admPct>=8?Math.round(admPct)+'%':''}</span></div>`;
+    h+=`</div></div></div>`;
+  });
+  h+=`<div class="legend" style="margin-top:0.5rem"><div class="legend-item"><div class="legend-dot" style="background:var(--rose)"></div>Program</div><div class="legend-item"><div class="legend-dot" style="background:rgba(190,60,60,0.5)"></div>Admin</div></div>`;
+  if($('#out-actual-budget'))$('#out-actual-budget').innerHTML=h;
+
+  // Reserve coverage with 4.5-month staffing target
+  if(a==='All Areas'){
+    h='';
+    const maxVal=Math.max(...D.field_areas.map(ar=>D.equity[ar]||0));
+    [...D.field_areas].sort((x,y)=>(D.equity[y]||0)-(D.equity[x]||0)).forEach((ar,i)=>{
+      const aeq=D.equity[ar]||0;
+      const atr=D.target_reserve[ar]||0;
+      const eqPct=maxVal?aeq/maxVal*100:0;
+      const tgtPct=maxVal?Math.min(atr,aeq)/maxVal*100:0;
+      const surplusPct=aeq>atr?(maxVal?(aeq-atr)/maxVal*100:0):0;
+      const gapPct=aeq<atr?(maxVal?(atr-aeq)/maxVal*100:0):0;
+      h+=`<div class="bar-group"><div class="bar-label"><span>${ar}</span><span>${fmtK(aeq)}</span></div><div class="bar-track"><div style="display:flex;height:100%;border-radius:4px;overflow:hidden"><div style="width:${tgtPct}%;background:var(--warm)"></div>${surplusPct>0?`<div style="width:${surplusPct}%;background:var(--accent)"></div>`:''}${gapPct>0?`<div style="width:${gapPct}%;background:#e0e0e0"></div>`:''}</div></div></div>`;
+    });
+    h+=`<div class="legend" style="margin-top:0.6rem"><div class="legend-item"><div class="legend-dot" style="background:var(--warm)"></div>Staffing Reserve (4.5 Mo)</div><div class="legend-item"><div class="legend-dot" style="background:var(--accent)"></div>Growth Funds</div><div class="legend-item"><div class="legend-dot" style="background:#e0e0e0"></div>Gap to Target</div></div>`;
+    if($('#out-reserve'))$('#out-reserve').innerHTML=h;
+  } else {
+    const atr=D.target_reserve[a]||0;
+    const pctT=atr>0?eq/atr:0;
+    const aStaff=D.staffing_2026[a]||0;
+    const aStaffMo=aStaff>0?eq/(aStaff/12):0;
+    const aGrowth=eq-atr;
+    h=`<div style="text-align:center;padding:1.5rem 0">`;
+    h+=`<div style="display:flex;gap:3rem;justify-content:center;margin-bottom:1.2rem">`;
+    h+=`<div><div style="font-size:2.5rem;font-weight:900;color:${reserveMonths>=4.5?'var(--green)':reserveMonths>=3?'var(--warm)':'var(--rose)'}">${fmtK(eq)}</div><div style="font-size:0.8rem;font-weight:700;color:var(--text-muted)">Cash Balance (as of 12/31/25)</div></div>`;
+    h+=`<div><div style="font-size:2.5rem;font-weight:900;color:var(--text)">${reserveMonths.toFixed(1)} Mo</div><div style="font-size:0.8rem;font-weight:700;color:var(--text-muted)">At Budgeted Burn Rate</div></div>`;
+    h+=`</div>`;
+    // Two-color bar: staffing reserve vs growth funds
+    const barMax=Math.max(eq,atr);
+    const tgtW=barMax>0?Math.min(Math.min(eq,atr)/barMax*100,100):0;
+    const growthW=aGrowth>0?(aGrowth/barMax*100):0;
+    const gapW=aGrowth<0?((atr-eq)/barMax*100):0;
+    h+=`<div style="margin:0 2rem">`;
+    h+=`<div class="bar-track" style="height:48px;border-radius:6px;overflow:hidden"><div style="display:flex;height:100%">`;
+    h+=`<div style="width:${tgtW}%;background:var(--warm);display:flex;flex-direction:column;align-items:center;justify-content:center"><span style="color:rgba(255,255,255,0.85);font-weight:600;font-size:0.65rem;text-shadow:0 1px 2px rgba(0,0,0,0.2)">Minimum Target</span><span style="color:#fff;font-weight:800;font-size:0.88rem;text-shadow:0 1px 2px rgba(0,0,0,0.2)">${fmtK(Math.min(eq,atr))}</span></div>`;
+    if(growthW>0){h+=`<div style="width:${growthW}%;background:var(--accent);display:flex;flex-direction:column;align-items:center;justify-content:center"><span style="color:rgba(255,255,255,0.85);font-weight:600;font-size:0.65rem;text-shadow:0 1px 2px rgba(0,0,0,0.2)">Growth Funds</span><span style="color:#fff;font-weight:800;font-size:0.88rem;text-shadow:0 1px 2px rgba(0,0,0,0.2)">${fmtK(aGrowth)}</span></div>`;}
+    if(gapW>0){h+=`<div style="width:${gapW}%;background:#e0e0e0;display:flex;flex-direction:column;align-items:center;justify-content:center"><span style="color:var(--text-dim);font-weight:600;font-size:0.65rem">Gap to Target</span><span style="color:var(--rose);font-weight:800;font-size:0.88rem">${fmtK(Math.abs(aGrowth))}</span></div>`;}
+    h+=`</div></div>`;
+    h+=`<div style="margin-top:0.4rem;font-size:0.72rem;color:var(--text-dim)">Minimum Target = 4.5 Months of Staffing Costs</div>`;
+    h+=`</div>`;
+    h+=`</div>`;
+    if($('#out-reserve'))$('#out-reserve').innerHTML=h;
+  }
+
+  // Direct Fundraising YoY
+  if(a==='All Areas'){
+    // Show all areas as grouped bars
+    const fa=D.field_areas;
+    h='';
+    const maxLf=Math.max(...fa.map(ar=>Math.max(lf['2023'][ar]||0,lf['2024'][ar]||0,lf['2025'][ar]||0,lf['2026'][ar]||0)));
+    [...fa].sort((x,y)=>(lf['2025'][y]||0)-(lf['2025'][x]||0)).forEach(ar=>{
+      const v23=lf['2023'][ar]||0,v24=lf['2024'][ar]||0,v25=lf['2025'][ar]||0,v26=lf['2026'][ar]||0;
+      const chg=v24>0?((v25-v24)/Math.abs(v24)*100).toFixed(0)+'%':'—';
+      const chgColor=v25>v24?'var(--green)':v25<v24?'var(--rose)':'var(--text-dim)';
+      h+=`<div style="margin-bottom:1rem"><div style="font-size:0.78rem;font-weight:700;color:var(--text-muted);margin-bottom:0.3rem">${ar} <span style="font-size:0.72rem;color:${chgColor};font-weight:700;margin-left:0.4rem">${v24>0?((v25-v24)>=0?'+':'')+chg:''} YoY</span></div>`;
+      [['2023',v23,'a'],['2024',v24,'b'],['2025',v25,'d'],['2026 (Budget)',v26,'e']].forEach(([yr,v,c])=>{
+        h+=`<div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.15rem"><span style="font-size:0.68rem;color:var(--text-dim);width:72px;white-space:nowrap">${yr}</span><div class="bar-track" style="flex:1;height:14px"><div class="bar-fill ${c}" style="width:${maxLf>0?Math.max(v,0)/maxLf*100:0}%"></div></div><span style="font-size:0.72rem;min-width:55px;text-align:right;color:${v<0?'var(--rose)':''}">${fmtK(v)}</span></div>`;
+      });
+      h+=`</div>`;
+    });
+    h+=`<div class="legend" style="margin-top:0.4rem"><div class="legend-item"><div class="legend-dot" style="background:var(--accent)"></div>2023</div><div class="legend-item"><div class="legend-dot" style="background:var(--warm)"></div>2024</div><div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div>2025</div><div class="legend-item"><div class="legend-dot" style="background:var(--rose)"></div>2026 (Budget)</div></div>`;
+    if($('#ov-local-fundraising'))$('#ov-local-fundraising').innerHTML=h;
+  } else {
+    // Single area: 3-year comparison
+    const v23=lf['2023'][a]||0,v24=lf['2024'][a]||0,v25=lf['2025'][a]||0,v26=lf['2026'][a]||0;
+    const maxV=Math.max(Math.abs(v23),Math.abs(v24),Math.abs(v25),Math.abs(v26));
+    const chg24=v23?yoy(v23,v24):null;
+    const chg25=v24?yoy(v24,v25):null;
+    const chg26=v25?yoy(v25,v26):null;
+    h='';
+    [[2023,v23,null,'a'],[2024,v24,chg24,'b'],[2025,v25,chg25,'d'],['2026 (Budget)',v26,chg26,'e']].forEach(([yr,v,chg,c])=>{
+      const chgStr=chg!=null?' <span style="font-size:0.7rem;color:'+(chg>0?'var(--green)':'var(--rose)')+';font-weight:700">'+(chg>=0?'+':'')+(chg*100).toFixed(1)+'%</span>':'';
+      h+=`<div class="bar-group"><div class="bar-label"><span>${yr}${chgStr}</span><span style="color:${v<0?'var(--rose)':''}">${fmtK(v)}</span></div><div class="bar-track"><div class="bar-fill ${c}" style="width:${maxV>0?Math.max(v,0)/maxV*100:0}%"></div></div></div>`;
+    });
+    // Breakdown
+    const pnlA=D.pnl_by_area[a];
+    const inc25=pnlA[8]['2025']||0;
+    const doa25=pnlA[4]['2025']||0;
+    const cogs25=pnlA[10]['2025']||0;
+    h+=`<div style="margin-top:0.8rem;font-size:0.78rem;color:var(--text-muted);display:flex;gap:1.5rem;flex-wrap:wrap"><span>2025 Gross Revenue: <strong>${fmtK(inc25)}</strong></span>${doa25?`<span>DOA Grant: <strong style="color:var(--rose)">−${fmtK(doa25)}</strong></span>`:''}<span>2025 Fundraising Costs: <strong style="color:var(--rose)">−${fmtK(cogs25)}</strong></span><span>= 2025 Net Fundraising: <strong>${fmtK(v25)}</strong></span></div>`;
+    if($('#ov-local-fundraising'))$('#ov-local-fundraising').innerHTML=h;
+  }
+
+  if(a==='All Areas'){
+    renderEffAll();
+  } else {
+    renderEffSingle(a);
+  }
+}
+
+function renderEffAll(){
+  const fa=D.field_areas;
+  const costKpis=[
+    {t:'Cost per Individual Served',k:'cost_per_individual',f:fmt,lower:1},
+    {t:'Cost per Hosted Day+Night',k:'cost_per_hosted',f:fmt,lower:1},
+    {t:'Cost per Intake',k:'cost_per_intake',f:fmt,lower:1},
+    {t:'Cost per Graduation',k:'cost_per_graduation',f:fmt,lower:1},
+    {t:'Cost per Service Hour',k:'cost_per_service_hour',f:fmt,lower:1},
+    {t:'Program Cost Ratio',k:'program_cost_ratio',f:v=>v!=null?fmtPct(v):'—',lower:1},
+  ];
+  let h='';
+  costKpis.forEach(kpi=>{
+    h+=`<div class="eff-card"><h4>${kpi.t}</h4>`;
+    [...fa].sort((x,y)=>{const va=D.efficiency['2025'][x]?.[kpi.k],vb=D.efficiency['2025'][y]?.[kpi.k];if(va==null)return 1;if(vb==null)return-1;return kpi.lower?va-vb:vb-va}).forEach(ar=>{
+      const v24=D.efficiency['2024'][ar]?.[kpi.k],v25=D.efficiency['2025'][ar]?.[kpi.k];
+      const chg=(v24!=null&&v25!=null&&v24!==0)?(v25-v24)/Math.abs(v24):null;
+      h+=`<div class="eff-row"><span class="area">${ar}</span><div class="vals"><span class="v24">${kpi.f(v24)}</span><span class="v25">${kpi.f(v25)}</span><span class="chg ${chgCls(chg,kpi.lower)}">${chg!=null?(chg>0?'+':'')+(chg*100).toFixed(0)+'%':'—'}</span></div></div>`;
+    });
+    h+='</div>';
+  });
+  $('#eff-cards').innerHTML=h;
+
+  const revKpis=[
+    {t:'Fundraising ROI',k:'fundraising_roi',f:v=>v!=null?v.toFixed(2)+'x':'—',lower:0},
+    {t:'Revenue per Volunteer',k:'rev_per_volunteer',f:fmt,lower:0},
+    {t:'Admin Ratio',k:'admin_ratio',f:v=>v!=null?fmtPct(v):'—',lower:1},
+    {t:'Intake Conversion',k:'intake_conversion',f:v=>v!=null?fmtPct(v):'—',lower:0},
+  ];
+  h='';
+  revKpis.forEach(kpi=>{
+    h+=`<div class="eff-card"><h4>${kpi.t}</h4>`;
+    [...fa].sort((x,y)=>{const va=D.efficiency['2025'][x]?.[kpi.k],vb=D.efficiency['2025'][y]?.[kpi.k];if(va==null)return 1;if(vb==null)return-1;return kpi.lower?va-vb:vb-va}).forEach(ar=>{
+      const v24=D.efficiency['2024'][ar]?.[kpi.k],v25=D.efficiency['2025'][ar]?.[kpi.k];
+      const chg=(v24!=null&&v25!=null&&v24!==0)?(v25-v24)/Math.abs(v24):null;
+      h+=`<div class="eff-row"><span class="area">${ar}</span><div class="vals"><span class="v24">${kpi.f(v24)}</span><span class="v25">${kpi.f(v25)}</span><span class="chg ${chgCls(chg,kpi.lower)}">${chg!=null?(chg>0?'+':'')+(chg*100).toFixed(0)+'%':'—'}</span></div></div>`;
+    });
+    h+='</div>';
+  });
+  $('#eff-rev').innerHTML=h;
+}
+
+function renderEffSingle(a){
+  const e24=D.efficiency['2024'][a]||{},e25=D.efficiency['2025'][a]||{};
+  const allKpis=[
+    {t:'Cost per Individual Served',k:'cost_per_individual',f:fmt,lower:1},
+    {t:'Cost per Hosted Day+Night',k:'cost_per_hosted',f:fmt,lower:1},
+    {t:'Cost per Intake',k:'cost_per_intake',f:fmt,lower:1},
+    {t:'Cost per Graduation',k:'cost_per_graduation',f:fmt,lower:1},
+    {t:'Cost per Service Hour',k:'cost_per_service_hour',f:fmt,lower:1},
+    {t:'Program Cost Ratio',k:'program_cost_ratio',f:v=>v!=null?fmtPct(v):'—',lower:1},
+    {t:'Fundraising ROI',k:'fundraising_roi',f:v=>v!=null?v.toFixed(2)+'x':'—',lower:0},
+    {t:'Revenue per Volunteer',k:'rev_per_volunteer',f:fmt,lower:0},
+    {t:'Admin Ratio',k:'admin_ratio',f:v=>v!=null?fmtPct(v):'—',lower:1},
+    {t:'Intake Conversion',k:'intake_conversion',f:v=>v!=null?fmtPct(v):'—',lower:0},
+  ];
+  let h='<div class="eff-card" style="grid-column:1/-1"><h4>'+a+' — Efficiency KPIs</h4>';
+  allKpis.forEach(kpi=>{
+    const v24=e24[kpi.k],v25=e25[kpi.k];
+    const chg=(v24!=null&&v25!=null&&v24!==0)?(v25-v24)/Math.abs(v24):null;
+    h+=`<div class="eff-row"><span class="area">${kpi.t}</span><div class="vals"><span class="v24">${kpi.f(v24)}</span><span class="v25">${kpi.f(v25)}</span><span class="chg ${chgCls(chg,kpi.lower)}">${chg!=null?(chg>0?'+':'')+(chg*100).toFixed(0)+'%':'—'}</span></div></div>`;
+  });
+  h+='</div>';
+  $('#eff-cards').innerHTML=h;
+  $('#eff-rev').innerHTML='';
+}
+
+function clickDfKpi(idx){
+  const cards=document.querySelectorAll('#df-kpis .kpi-card');
+  cards.forEach(c=>c.classList.remove('kpi-selected'));
+  cards[idx].classList.add('kpi-selected');
+  const m=window._dfMetrics[idx];
+  $('#df-area-title').textContent=m.l+' By Area';
+  renderFinAreaBars(m.k,m.l,'#df-area-bars');
+}
+
+function clickOvKpi(idx){
+  const cards=document.querySelectorAll('#ov-kpis .kpi-card');
+  cards.forEach(c=>c.classList.remove('kpi-selected'));
+  cards[idx].classList.add('kpi-selected');
+  const m=window._ovMetrics[idx];
+  $('#ov-area-title').textContent=m.l+' By Area';
+  renderFinAreaBars(m.k,m.l,'#ov-area-bars');
+}
+
+function clickIntakeKpi(idx){
+  const cards=document.querySelectorAll('#sm-intake-kpis .kpi-card');
+  cards.forEach(c=>c.classList.remove('kpi-selected'));
+  cards[idx].classList.add('kpi-selected');
+  const m=window._intakeMetrics[idx];
+  $('#sm-intake-area-title').textContent=m.l+' By Area';
+  if(m.k){renderAreaBars(m.k,m.l,'#sm-intake-area',m.dec);}
+  else{$('#sm-intake-area').innerHTML='<p style="color:var(--text-dim);font-size:0.82rem;padding:1rem 0">Calculated metric \u2014 no per-area breakdown available.</p>';}
+}
+
+function clickPeopleKpi(idx){
+  const cards=document.querySelectorAll('#sm-people-kpis .kpi-card');
+  cards.forEach(c=>c.classList.remove('kpi-selected'));
+  cards[idx].classList.add('kpi-selected');
+  const m=window._peopleMetrics[idx];
+  $('#sm-people-area-title').textContent=m.l+' By Area';
+  if(m.k){renderAreaBars(m.k,m.l,'#sm-people-area',m.dec);}
+  else{$('#sm-people-area').innerHTML='<p style="color:var(--text-dim);font-size:0.82rem;padding:1rem 0">Estimated metric \u2014 no per-area breakdown available.</p>';}
+}
+
+function clickRelKpi(idx){
+  const cards=document.querySelectorAll('#sm-rel-kpis .kpi-card');
+  cards.forEach(c=>c.classList.remove('kpi-selected'));
+  cards[idx].classList.add('kpi-selected');
+  const m=window._relMetrics[idx];
+  $('#sm-rel-area-title').textContent=m.l+' By Area';
+  if(m.k){renderAreaBars(m.k,m.l,'#sm-rel-area',m.dec);}
+}
+
+function clickVolKpi(idx){
+  const cards=document.querySelectorAll('#sm-vol-kpis .kpi-card');
+  cards.forEach(c=>c.classList.remove('kpi-selected'));
+  cards[idx].classList.add('kpi-selected');
+  const m=window._volMetrics[idx];
+  $('#sm-vol-area-title').textContent=m.l+' By Area';
+  if(m.k){renderAreaBars(m.k,m.l,'#sm-vol-area',m.dec);}
+}
+
+function switchSM(btn){
+  document.querySelectorAll('.sm-tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.sm-sub').forEach(s=>s.classList.remove('active'));
+  $('#sm-'+btn.dataset.sm).classList.add('active');
+}
+
+render();
+</script>
+</body>
+</html>
