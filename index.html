@@ -38,6 +38,8 @@ body{font-family:'Lato',sans-serif;background:var(--bg);color:var(--text);line-h
 
 .main{max-width:1320px;margin:0 auto;padding:1.5rem 2rem 4rem}
 .section{display:none;animation:fadeIn 0.3s ease}.section.active{display:block}
+.exec-row:hover{background:var(--surface2)!important}
+@media(max-width:768px){#exec-inbox{flex-direction:column!important;min-height:auto!important}#exec-sidebar{width:100%!important;min-width:auto!important;border-right:none!important;border-bottom:1px solid var(--border)}#exec-hero{min-height:400px}}
 .sm-sub{display:none}.sm-sub.active{display:block}
 .df-sub{display:none}.df-sub.active{display:block}
 .df-area-tabs{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:1rem;overflow-x:auto}
@@ -209,11 +211,13 @@ try{
 <main class="main">
 <div class="section active" id="exec">
   <h2 class="section-title">Highlights <span style="font-size:0.75rem;font-weight:600;color:var(--accent);margin-left:0.5rem">Year-End 2025</span></h2>
-  <div id="exec-content"></div>
-  <div class="kpi-grid" id="exec-kpis" style="margin-top:0"></div>
-  <div class="chart-box full" style="margin-top:1.2rem" id="exec-chart-box">
-    <h3 id="exec-chart-title" style="font-size:1.2rem"></h3>
-    <div id="exec-chart"></div>
+  <div id="exec-inbox" style="display:flex;gap:0;min-height:480px;border:1px solid var(--border);border-radius:12px;overflow:hidden;background:var(--surface)">
+    <div id="exec-sidebar" style="width:360px;min-width:300px;border-right:1px solid var(--border);overflow-y:auto;flex-shrink:0"></div>
+    <div id="exec-hero" style="flex:1;padding:1.5rem;overflow-y:auto">
+      <div id="exec-kpis" class="kpi-grid" style="margin-bottom:1.2rem"></div>
+      <h3 id="exec-chart-title" style="font-size:1.2rem;margin-bottom:0.8rem"></h3>
+      <div id="exec-chart"></div>
+    </div>
   </div>
 </div>
 
@@ -759,32 +763,42 @@ h+=`<div class="kpi-card ${k.cl||''}${opts&&opts.onClick&&i===0?' kpi-selected':
       {l:'Operating Expenses',k:'opex',bc:'b',type:'fin'},
     ];
 
-    // Narrative section labels
-    let eh='';
-    eh+=`<div style="display:flex;gap:1.5rem;margin-bottom:1.2rem;flex-wrap:wrap">`;
-    eh+=`<div style="flex:1;min-width:200px;padding:0.6rem 0;border-bottom:3px solid var(--green)"><div style="font-size:0.95rem;font-weight:800;color:var(--green)">We're serving more families.</div><div style="font-size:0.78rem;color:var(--text-muted);margin-top:0.2rem">Average monthly caseload grew year-over-year.</div></div>`;
-    eh+=`<div style="flex:1;min-width:200px;padding:0.6rem 0;border-bottom:3px solid var(--accent)"><div style="font-size:0.95rem;font-weight:800;color:var(--accent)">We're doing it more efficiently.</div><div style="font-size:0.78rem;color:var(--text-muted);margin-top:0.2rem">Cost per family and individual both decreased.</div></div>`;
-    eh+=`<div style="flex:1;min-width:200px;padding:0.6rem 0;border-bottom:3px solid var(--warm)"><div style="font-size:0.95rem;font-weight:800;color:var(--warm)">Revenue outpaced expense growth.</div><div style="font-size:0.78rem;color:var(--text-muted);margin-top:0.2rem">Net fundraising grew ${df24>0?((dfChg*100).toFixed(0)):''}% vs ${expGr!=null?(expGr*100).toFixed(0):''}% expense growth.</div></div>`;
-    eh+=`</div>`;
-    $('#exec-content').innerHTML=eh;
+    // Sidebar: just the 3 headline rows
+    const groups=[
+      {color:'var(--green)',title:"We're serving more families.",sub:'Average monthly caseload grew year-over-year.',startIdx:0,
+       kpis:[
+         {label:'AVG FAMILIES / MO',value:fam25.toFixed(0),chg:famChg,up:fam25>fam24,cl:'green'},
+         {label:'AVG INDIVIDUALS / MO',value:ind25.toFixed(0),chg:indChg,up:ind25>ind24,cl:'green'},
+       ]},
+      {color:'var(--accent)',title:"We're doing it more efficiently.",sub:'Cost per family and individual both decreased.',startIdx:2,
+       kpis:[
+         {label:'COST / FAMILY / MO',value:fmt(Math.round(cpf25)),chg:cpfChg,up:cpf25<cpf24,cl:'accent'},
+         {label:'COST / INDIVIDUAL / MO',value:fmt(Math.round(cpi25)),chg:cpiChg,up:cpi25<cpi24,cl:'accent'},
+       ]},
+      {color:'var(--warm)',title:'Revenue outpaced expense growth.',sub:'Net fundraising grew '+(df24>0?((dfChg*100).toFixed(0)):'')+'% vs '+(expGr!=null?(expGr*100).toFixed(0):'')+'% expense growth.',startIdx:4,
+       kpis:[
+         {label:'NET FUNDRAISING',value:fmtK(df25),chg:dfChg,up:df25>df24,cl:'warm'},
+         {label:'OPERATING EXPENSES',value:fmtK(opex25),chg:expGr,up:exp25>exp24,cl:'warm'},
+       ]},
+    ];
+    window._execGroups=groups;
 
-    // Build all 6 KPIs in the kpi-grid with visual sub-grouping
     const selIdx=window._lastExecIdx||0;
-    let kh='';
+    const selGroup=selIdx<2?0:selIdx<4?1:2;
 
-    // Group 1: Serving (green)
-    kh+=`<div class="kpi-card green${selIdx===0?' kpi-selected':''}" onclick="clickExecKpi(0)" style="border-top:3px solid var(--green)"><div class="kpi-label" style="font-size:0.62rem">AVG FAMILIES / MO</div><div class="kpi-value">${fam25.toFixed(0)}</div><div class="kpi-change ${fam25>fam24?'up':'down'}">${famChg!=null?((fam25>fam24?'\u25b2':'\u25bc')+' '+(famChg>0?'+':'')+(famChg*100).toFixed(1)+'% vs 2024'):''}</div></div>`;
-    kh+=`<div class="kpi-card green${selIdx===1?' kpi-selected':''}" onclick="clickExecKpi(1)" style="border-top:3px solid var(--green)"><div class="kpi-label" style="font-size:0.62rem">AVG INDIVIDUALS / MO</div><div class="kpi-value">${ind25.toFixed(0)}</div><div class="kpi-change ${ind25>ind24?'up':'down'}">${indChg!=null?((ind25>ind24?'\u25b2':'\u25bc')+' '+(indChg>0?'+':'')+(indChg*100).toFixed(1)+'% vs 2024'):''}</div></div>`;
+    let sh='';
+    groups.forEach((g,gi)=>{
+      const isActive=gi===selGroup;
+      sh+=`<div class="exec-row${isActive?' exec-row-active':''}" data-group="${gi}" style="padding:1.5rem 1.4rem;cursor:pointer;border-left:4px solid ${isActive?g.color:'transparent'};background:${isActive?'var(--surface2)':'transparent'};transition:all 0.15s" onclick="clickExecGroup(${gi})">`;
+      sh+=`<div style="font-size:1.15rem;font-weight:800;color:${g.color};line-height:1.35">${g.title}</div>`;
+      sh+=`<div style="font-size:0.82rem;color:var(--text-muted);margin-top:0.4rem;line-height:1.55">${g.sub}</div>`;
+      sh+=`</div>`;
+      if(gi<groups.length-1)sh+=`<div style="height:1px;background:var(--border)"></div>`;
+    });
+    $('#exec-sidebar').innerHTML=sh;
 
-    // Group 2: Efficiency (accent)
-    kh+=`<div class="kpi-card accent${selIdx===2?' kpi-selected':''}" onclick="clickExecKpi(2)" style="border-top:3px solid var(--accent)"><div class="kpi-label" style="font-size:0.62rem">COST / FAMILY / MO</div><div class="kpi-value">${fmt(Math.round(cpf25))}</div><div class="kpi-change ${cpf25<cpf24?'down':'up'}">${cpfChg!=null?((cpf25<cpf24?'\u25bc':'\u25b2')+' '+(cpfChg>0?'+':'')+(cpfChg*100).toFixed(1)+'% vs 2024'):''}</div></div>`;
-    kh+=`<div class="kpi-card accent${selIdx===3?' kpi-selected':''}" onclick="clickExecKpi(3)" style="border-top:3px solid var(--accent)"><div class="kpi-label" style="font-size:0.62rem">COST / INDIVIDUAL / MO</div><div class="kpi-value">${fmt(Math.round(cpi25))}</div><div class="kpi-change ${cpi25<cpi24?'down':'up'}">${cpiChg!=null?((cpi25<cpi24?'\u25bc':'\u25b2')+' '+(cpiChg>0?'+':'')+(cpiChg*100).toFixed(1)+'% vs 2024'):''}</div></div>`;
-
-    // Group 3: Revenue (warm)
-    kh+=`<div class="kpi-card warm${selIdx===4?' kpi-selected':''}" onclick="clickExecKpi(4)" style="border-top:3px solid var(--warm)"><div class="kpi-label" style="font-size:0.62rem">NET FUNDRAISING</div><div class="kpi-value">${fmtK(df25)}</div><div class="kpi-change ${df25>df24?'up':'down'}">${dfChg!=null?((df25>df24?'\u25b2':'\u25bc')+' '+(dfChg>0?'+':'')+(dfChg*100).toFixed(1)+'% vs 2024'):''}</div></div>`;
-    kh+=`<div class="kpi-card warm${selIdx===5?' kpi-selected':''}" onclick="clickExecKpi(5)" style="border-top:3px solid var(--warm)"><div class="kpi-label" style="font-size:0.62rem">OPERATING EXPENSES</div><div class="kpi-value">${fmtK(opex25)}</div><div class="kpi-change ${exp25>exp24?'up':'down'}">${expGr!=null?((exp25>exp24?'\u25b2':'\u25bc')+' '+(expGr>0?'+':'')+(expGr*100).toFixed(1)+'% vs 2024'):''}</div></div>`;
-
-    $('#exec-kpis').innerHTML=kh;
+    // KPI cards in the hero body
+    renderExecKpiCards(selIdx);
 
     if(window._lastExecIdx==null)window._lastExecIdx=0;
     renderExecChart(window._lastExecIdx);
@@ -1404,12 +1418,47 @@ function renderIcBars(idx){
   buildViewSelector('#ic-area-title',m.l+' ');
 }
 
+function renderExecKpiCards(selIdx){
+  const groups=window._execGroups;if(!groups)return;
+  const gi=selIdx<2?0:selIdx<4?1:2;
+  const g=groups[gi];
+  let kh='';
+  g.kpis.forEach((kpi,ki)=>{
+    const idx=g.startIdx+ki;
+    const isSel=idx===selIdx;
+    const arrow=kpi.up?'\u25b2':'\u25bc';
+    const pct=kpi.chg!=null?(kpi.chg>0?'+':'')+(kpi.chg*100).toFixed(1)+'%':'';
+    kh+=`<div class="kpi-card ${kpi.cl}${isSel?' kpi-selected':''}" onclick="clickExecKpi(${idx})" style="border-top:3px solid ${g.color}">`;
+    kh+=`<div class="kpi-label" style="font-size:0.62rem">${kpi.label}</div>`;
+    kh+=`<div class="kpi-value">${kpi.value}</div>`;
+    if(pct)kh+=`<div class="kpi-change ${kpi.up?'up':'down'}">${arrow} ${pct} vs 2024</div>`;
+    kh+=`</div>`;
+  });
+  $('#exec-kpis').innerHTML=kh;
+}
 function clickExecKpi(idx){
   window._lastExecIdx=idx;
-  // Deselect all exec KPIs, select this one
-  document.querySelectorAll('#exec-kpis .kpi-card').forEach(c=>c.classList.remove('kpi-selected'));
-  document.querySelectorAll('#exec-kpis .kpi-card')[idx].classList.add('kpi-selected');
+  const group=idx<2?0:idx<4?1:2;
+  // Update sidebar row highlights
+  const colors=['var(--green)','var(--accent)','var(--warm)'];
+  document.querySelectorAll('#exec-sidebar .exec-row').forEach((r,i)=>{
+    if(i===group){
+      r.classList.add('exec-row-active');
+      r.style.borderLeftColor=colors[i];
+      r.style.background='var(--surface2)';
+    } else {
+      r.classList.remove('exec-row-active');
+      r.style.borderLeftColor='transparent';
+      r.style.background='transparent';
+    }
+  });
+  // Re-render KPI cards for this group
+  renderExecKpiCards(idx);
   renderExecChart(idx);
+}
+function clickExecGroup(gi){
+  const firstIdx=gi*2;
+  clickExecKpi(firstIdx);
 }
 
 function renderExecChart(idx){
