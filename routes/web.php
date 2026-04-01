@@ -22,10 +22,18 @@ use App\Http\Controllers\Admin\AdminGlImportController;
 use App\Http\Controllers\Admin\AdminQboController;
 use App\Http\Controllers\Admin\AdminStartingCashController;
 use App\Http\Controllers\Admin\AdminUserController;
+use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DepositController;
 use App\Http\Controllers\GlDrilldownController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
+
+// ── Passwordless Auth ───────────────────────────────────────────────────────
+Route::get('/login', [LoginController::class, 'show'])->name('login')->middleware('guest');
+Route::post('/auth/send-code', [LoginController::class, 'sendCode'])->middleware('guest');
+Route::post('/auth/verify-code', [LoginController::class, 'verifyCode'])->middleware('guest');
+Route::post('/auth/logout', [LoginController::class, 'logout'])->name('logout')->middleware('auth');
 
 Route::get('/', function () {
     return redirect()->route('dashboard');
@@ -87,6 +95,15 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
     Route::post('design/apply-preset', [AdminDesignController::class, 'applyPreset'])->name('design.apply-preset');
     Route::post('design/save-preset', [AdminDesignController::class, 'savePreset'])->name('design.save-preset');
     Route::delete('design/preset/{preset}', [AdminDesignController::class, 'deletePreset'])->name('design.delete-preset');
+});
+
+// ── Fundraising Module ──────────────────────────────────────────────────────
+Route::middleware(['auth'])->group(function () {
+    Route::get('/fundraising/deposits', [DepositController::class, 'index'])->name('fundraising.deposits');
+    Route::get('/fundraising/history', [DepositController::class, 'history'])->name('fundraising.history');
+    Route::post('/api/ocr', [DepositController::class, 'ocr']);
+    Route::post('/api/categorize', [DepositController::class, 'categorize']);
+    Route::post('/api/submit', [DepositController::class, 'submit']);
 });
 
 // GL Drill-down API
