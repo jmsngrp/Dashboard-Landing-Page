@@ -112,4 +112,14 @@ Route::middleware(['auth', 'verified'])->prefix('api')->group(function () {
     Route::get('gl/account-transactions', [GlDrilldownController::class, 'accountTransactions'])->name('api.gl.account-transactions');
 });
 
-require __DIR__.'/auth.php';
+// Email verification routes (kept from Breeze, minus password-based auth)
+Route::middleware('auth')->group(function () {
+    Route::get('verify-email', \App\Http\Controllers\Auth\EmailVerificationPromptController::class)
+        ->name('verification.notice');
+    Route::get('verify-email/{id}/{hash}', \App\Http\Controllers\Auth\VerifyEmailController::class)
+        ->middleware(['signed', 'throttle:6,1'])
+        ->name('verification.verify');
+    Route::post('email/verification-notification', [\App\Http\Controllers\Auth\EmailVerificationNotificationController::class, 'store'])
+        ->middleware('throttle:6,1')
+        ->name('verification.send');
+});
